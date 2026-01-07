@@ -15,8 +15,14 @@ use App\Models\Feedback;
 use App\Models\MedicalContent;
 use App\Models\AIConfiguration;
 use App\Models\TrainingScenario;
+use App\Models\Report;
+use App\Models\HealthPlan;
+use App\Models\NutritionPlan;
+use App\Services\ReportService;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Response;
 
 class AdminController extends Controller
 {
@@ -1228,7 +1234,49 @@ class AdminController extends Controller
             'current_period' => $period,
         ];
 
-        return view('admin.analytics', compact('analytics'));
+        // Get available reports
+        $reportService = app(ReportService::class);
+        $reports = $reportService->getAvailableReports();
+
+        // Get health plans and nutrition plans data for management
+        $perPage = $request->get('per_page', 10);
+        $selectedUser = $request->get('user_id');
+        $planType = $request->get('plan_type', 'health'); // health or nutrition
+
+        // Health Plans Query
+        $healthPlansQuery = HealthPlan::with('user')
+            ->orderBy('created_at', 'desc');
+        
+        if ($selectedUser) {
+            $healthPlansQuery->where('user_id', $selectedUser);
+        }
+
+        $healthPlans = $healthPlansQuery->paginate($perPage, ['*'], 'health_page');
+
+        // Nutrition Plans Query
+        $nutritionPlansQuery = NutritionPlan::with('user')
+            ->orderBy('created_at', 'desc');
+        
+        if ($selectedUser) {
+            $nutritionPlansQuery->where('user_id', $selectedUser);
+        }
+
+        $nutritionPlans = $nutritionPlansQuery->paginate($perPage, ['*'], 'nutrition_page');
+
+        // Get all users for filter dropdown
+        $allUsers = User::select('id', 'name', 'email')
+            ->orderBy('name')
+            ->get();
+
+        return view('admin.analytics', compact(
+            'analytics', 
+            'reports', 
+            'healthPlans', 
+            'nutritionPlans', 
+            'allUsers',
+            'selectedUser',
+            'planType'
+        ));
     }
 
     private function getUserGrowthData($period = 'year')
@@ -1384,7 +1432,7 @@ class AdminController extends Controller
         }
 
         // API Status check
-        $apiKey = env('OPENAI_API_KEY');
+        $apiKey = env('GEMINI_API_KEY');
         $apiStatus = !empty($apiKey) ? 'Active' : 'Inactive';
 
         // Notifications - fetch from AIConfiguration
@@ -1486,5 +1534,177 @@ class AdminController extends Controller
             ->paginate(20);
 
         return view('admin.system.logs', compact('logs'));
+    }
+
+    /**
+     * Generate a report
+     */
+    public function generateReport(Request $request, ReportService $reportService)
+    {
+        if (!session('admin_logged_in')) {
+            return redirect()->route('admin.login');
+        }
+
+        $reportType = $request->get('type'); // user_activity, ai_performance, health_trend
+        $format = $request->get('format', 'csv'); // csv, excel, pdf
+
+        try {
+            $report = null;
+            
+            switch ($reportType) {
+                case 'user_activity':
+                    $report = $reportService->generateUserActivityReport($format);
+                    break;
+                case 'ai_performance':
+                    $report = $reportService->generateAIPerformanceReport($format);
+                    break;
+                case 'health_trend':
+                    $report = $reportService->generateHealthTrendReport($format);
+                    break;
+                default:
+                    return back()->with('error', 'Loại báo cáo không hợp lệ');
+            }
+
+            if ($report && $report->status === 'ready') {
+                return back()->with('success', 'Báo cáo đã được tạo thành công!');
+            } else {
+                return back()->with('error', 'Không thể tạo báo cáo. Vui lòng thử lại.');
+            }
+        } catch (\Exception $e) {
+            \Log::error('Error generating report: ' . $e->getMessage());
+            return back()->with('error', 'Đã xảy ra lỗi khi tạo báo cáo.');
+        }
+    }
+
+    /**
+     * Download a single report
+     */
+    public function downloadReport(Report $report)
+    {
+        if (!session('admin_logged_in')) {
+            return redirect()->route('admin.login');
+        }
+
+        if ($report->status !== 'ready' || !$report->file_path) {
+            return back()->with('error', 'Báo cáo chưa sẵn sàng để tải xuống.');
+        }
+
+        if (!Storage::disk('public')->exists($report->file_path)) {
+            return back()->with('error', 'File báo cáo không tồn tại.');
+        }
+
+        $filePath = Storage::disk('public')->path($report->file_path);
+        $fileName = $report->name . '_' . $report->generated_at->format('Y-m-d') . '.' . $report->type;
+
+        return Response::download($filePath, $fileName);
+    }
+
+    /**
+     * View a report (display in browser)
+     */
+    public function viewReport(Report $report)
+    {
+        if (!session('admin_logged_in')) {
+            return redirect()->route('admin.login');
+        }
+
+        if ($report->status !== 'ready' || !$report->file_path) {
+            return back()->with('error', 'Báo cáo chưa sẵn sàng để xem.');
+        }
+
+        if (!Storage::disk('public')->exists($report->file_path)) {
+            return back()->with('error', 'File báo cáo không tồn tại.');
+        }
+
+        $filePath = Storage::disk('public')->path($report->file_path);
+        
+        // For CSV files, read and display as table
+        if ($report->type === 'csv') {
+            $data = [];
+            if (($handle = fopen($filePath, 'r')) !== false) {
+                $headers = fgetcsv($handle);
+                while (($row = fgetcsv($handle)) !== false) {
+                    $data[] = array_combine($headers, $row);
+                }
+                fclose($handle);
+            }
+            
+            return view('admin.reports.view', compact('report', 'data'));
+        }
+
+        // For other formats, download
+        return $this->downloadReport($report);
+    }
+
+    /**
+     * Download all reports as ZIP
+     */
+    public function downloadAllReports(ReportService $reportService)
+    {
+        if (!session('admin_logged_in')) {
+            return redirect()->route('admin.login');
+        }
+
+        try {
+            $zipFileName = $reportService->downloadAllReports();
+            
+            if (!$zipFileName) {
+                return back()->with('error', 'Không có báo cáo nào để tải xuống.');
+            }
+
+            $filePath = Storage::disk('public')->path($zipFileName);
+            $fileName = 'all_reports_' . now()->format('Y-m-d') . '.zip';
+
+            return Response::download($filePath, $fileName)->deleteFileAfterSend(true);
+        } catch (\Exception $e) {
+            \Log::error('Error downloading all reports: ' . $e->getMessage());
+            return back()->with('error', 'Đã xảy ra lỗi khi tải xuống tất cả báo cáo.');
+        }
+    }
+
+    /**
+     * Delete health plan (admin)
+     */
+    public function deleteHealthPlan($id)
+    {
+        if (!session('admin_logged_in')) {
+            return redirect()->route('admin.login');
+        }
+
+        try {
+            $plan = HealthPlan::findOrFail($id);
+            $planTitle = $plan->title;
+            $plan->delete();
+            
+            return redirect()->route('admin.analytics', ['plan_type' => 'health'])
+                ->with('success', "Đã xóa kế hoạch sức khỏe '{$planTitle}' thành công.");
+        } catch (\Exception $e) {
+            \Log::error('Admin failed to delete health plan: ' . $e->getMessage());
+            return redirect()->route('admin.analytics', ['plan_type' => 'health'])
+                ->with('error', 'Không thể xóa kế hoạch sức khỏe. Vui lòng thử lại.');
+        }
+    }
+
+    /**
+     * Delete nutrition plan (admin)
+     */
+    public function deleteNutritionPlan($id)
+    {
+        if (!session('admin_logged_in')) {
+            return redirect()->route('admin.login');
+        }
+
+        try {
+            $plan = NutritionPlan::findOrFail($id);
+            $planTitle = $plan->title;
+            $plan->delete();
+            
+            return redirect()->route('admin.analytics', ['plan_type' => 'nutrition'])
+                ->with('success', "Đã xóa kế hoạch dinh dưỡng '{$planTitle}' thành công.");
+        } catch (\Exception $e) {
+            \Log::error('Admin failed to delete nutrition plan: ' . $e->getMessage());
+            return redirect()->route('admin.analytics', ['plan_type' => 'nutrition'])
+                ->with('error', 'Không thể xóa kế hoạch dinh dưỡng. Vui lòng thử lại.');
+        }
     }
 }

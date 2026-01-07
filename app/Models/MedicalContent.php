@@ -36,6 +36,23 @@ class MedicalContent extends Model
     {
         return $this->belongsTo(User::class, 'created_by');
     }
+
+    /**
+     * Get all users who bookmarked this content.
+     */
+    public function bookmarkedBy()
+    {
+        return $this->belongsToMany(User::class, 'bookmarks', 'medical_content_id', 'user_id')
+            ->withTimestamps();
+    }
+
+    /**
+     * Check if a user has bookmarked this content.
+     */
+    public function isBookmarkedBy($userId)
+    {
+        return $this->bookmarkedBy()->where('user_id', $userId)->exists();
+    }
 }
 
 

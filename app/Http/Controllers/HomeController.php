@@ -10,35 +10,33 @@ class HomeController extends Controller
 {
     public function index()
     {
-        // Lấy feedback tích cực từ database (general_feedback hoặc feature_request)
-        // Chỉ lấy những feedback đã được reviewed hoặc resolved
-        $testimonials = Feedback::with('user')
-            ->whereIn('type', ['general_feedback', 'feature_request'])
-            ->whereIn('status', ['reviewed', 'resolved'])
-            ->whereNotNull('message')
-            ->orderBy('created_at', 'desc')
-            ->limit(3)
-            ->get()
-            ->map(function ($feedback) {
-                // Tính rating dựa trên type (general_feedback = 5 sao, feature_request = 4-5 sao)
-                $rating = $feedback->type === 'general_feedback' ? 5 : 4;
-                
-                // Lấy tên và role từ user, nếu không có thì dùng default
-                $userName = $feedback->user->name ?? 'Anonymous User';
-                $userRole = $feedback->user->role 
-                    ? ucfirst($feedback->user->role) 
-                    : ($feedback->type === 'general_feedback' ? 'Client' : 'User');
-                
-                return [
-                    'id' => $feedback->id,
-                    'name' => $userName,
-                    'role' => $userRole,
-                    'message' => $feedback->message,
-                    'rating' => $rating,
-                    'created_at' => $feedback->created_at,
-                ];
-            })
-            ->toArray();
+        // Testimonials tiếng Việt
+        $testimonials = [
+            [
+                'id' => 1,
+                'name' => 'Nguyễn Thị Lan',
+                'role' => 'Người dùng',
+                'message' => 'AI HealthBot đã thay đổi hoàn toàn cách tiếp cận sức khỏe của tôi. Kế hoạch cá nhân hóa mà họ tạo ra đã tạo nên sự khác biệt đáng kể trong sức khỏe tổng thể của tôi.',
+                'rating' => 5,
+                'created_at' => now(),
+            ],
+            [
+                'id' => 2,
+                'name' => 'Trần Văn Minh',
+                'role' => 'Người dùng',
+                'message' => 'Tính năng chẩn đoán AI đã giúp tôi tiết kiệm rất nhiều thời gian chờ đợi các chuyên gia y tế. Độ chính xác của phân tích rất ấn tượng và các khuyến nghị rất phù hợp.',
+                'rating' => 5,
+                'created_at' => now(),
+            ],
+            [
+                'id' => 3,
+                'name' => 'Lê Thị Hương',
+                'role' => 'Khách hàng',
+                'message' => 'Tư vấn dinh dưỡng mà tôi nhận được đã thay đổi cuộc sống của tôi. Kế hoạch bữa ăn được điều chỉnh hoàn hảo theo nhu cầu và sở thích của tôi, và tôi đã thấy kết quả tuyệt vời chỉ sau vài tuần.',
+                'rating' => 5,
+                'created_at' => now(),
+            ],
+        ];
 
         return view('welcome', compact('testimonials'));
     }

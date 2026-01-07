@@ -4,7 +4,16 @@
 <div class="min-h-screen bg-gradient-to-br from-orange-50 to-amber-50 py-12 px-4 sm:px-6 lg:px-8">
     <div class="max-w-4xl mx-auto">
         <div class="mb-8">
-            <a href="{{ route('health-journal.index') }}" class="text-orange-600 hover:text-orange-800 mb-4 inline-block">← Back to Journal</a>
+            <div class="flex items-center justify-between mb-4">
+                <a href="{{ route('health-journal.index') }}" class="text-orange-600 hover:text-orange-800 inline-block">← Back to Journal</a>
+                <form action="{{ route('health-journal.destroy', $journal->id) }}" method="POST" class="inline" id="delete-journal-form">
+                    @csrf
+                    @method('DELETE')
+                    <button type="button" onclick="confirmDelete()" class="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors">
+                        🗑️ Xóa Journal
+                    </button>
+                </form>
+            </div>
             <h1 class="text-4xl font-bold text-gray-900">Journal Entry - {{ $journal->journal_date->format('M d, Y') }}</h1>
         </div>
 
@@ -102,19 +111,19 @@
             <!-- Doctor Recommendation -->
             @if($journal->doctor_recommended)
             <div class="p-4 bg-red-50 border-l-4 border-red-500 rounded-lg">
-                <h3 class="font-semibold text-red-800 mb-2">🏥 Doctor Consultation Recommended</h3>
-                <p class="text-sm text-red-700">{{ $journal->doctor_recommendation_reason ?? 'Based on your health journal entry, we recommend consulting with a healthcare professional.' }}</p>
+                <h3 class="font-semibold text-red-800 mb-2">🏥 Khuyến nghị Tư vấn Bác sĩ</h3>
+                <p class="text-sm text-red-700">{{ $journal->doctor_recommendation_reason ?? 'Dựa trên mục nhật ký sức khỏe của bạn, chúng tôi khuyên bạn nên tư vấn với chuyên gia y tế.' }}</p>
             </div>
             @endif
 
             <!-- AI Suggestions -->
             @if($journal->ai_suggestions && count($journal->ai_suggestions) > 0)
             <div class="border-t pt-6">
-                <h2 class="text-xl font-semibold text-gray-800 mb-4">💡 Health Suggestions</h2>
+                <h2 class="text-xl font-semibold text-gray-800 mb-4">💡 Gợi ý Sức khỏe</h2>
                 <div class="space-y-2">
                     @foreach($journal->ai_suggestions as $suggestion)
                         <div class="p-3 bg-green-50 rounded-lg border border-green-200">
-                            <p class="text-sm text-gray-700">{{ $suggestion['message'] }}</p>
+                            <p class="text-sm text-gray-700">{{ str_replace('🤖 AI: ', '', $suggestion['message'] ?? '') }}</p>
                         </div>
                     @endforeach
                 </div>
@@ -123,5 +132,13 @@
         </div>
     </div>
 </div>
+
+<script>
+function confirmDelete() {
+    if (confirm('Bạn có chắc chắn muốn xóa journal entry này? Hành động này không thể hoàn tác.')) {
+        document.getElementById('delete-journal-form').submit();
+    }
+}
+</script>
 @endsection
 

@@ -6,6 +6,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use Illuminate\Support\Facades\Storage;
 
 class User extends Authenticatable
 {
@@ -62,5 +63,67 @@ class User extends Authenticatable
     public function settings()
     {
         return $this->hasOne(UserSetting::class);
+    }
+
+    /**
+     * Get the user's notifications.
+     */
+    public function notifications()
+    {
+        return $this->hasMany(Notification::class);
+    }
+
+    /**
+     * Get unread notifications count.
+     */
+    public function unreadNotificationsCount(): int
+    {
+        return $this->notifications()->unread()->count();
+    }
+
+    /**
+     * Get the user's bookmarks.
+     */
+    public function bookmarks()
+    {
+        return $this->belongsToMany(MedicalContent::class, 'bookmarks', 'user_id', 'medical_content_id')
+            ->withTimestamps();
+    }
+
+    /**
+     * Get the avatar URL (from R2 or local storage)
+     */
+    public function getAvatarUrlAttribute(): ?string
+    {
+        if (!$this->avatar) {
+            return null;
+        }
+
+        $r2PublicUrl = config('filesystems.disks.r2.url', 'https://pub-07cce266cb7a4eff97bc6503d84b6470.r2.dev');
+        
+        // Check if avatar is stored in R2
+        // R2 files have format: userid_timestamp.ext (e.g., 1_1234567890.png) - stored in root
+        // OR: avatars/filename.jpg - stored in avatars folder (legacy)
+        // Support common image formats including jfif
+        if (preg_match('/^\d+_\d+\.(jpg|jpeg|png|gif|webp|jfif)$/i', $this->avatar)) {
+            // New format: Direct R2 URL format: https://pub-xxx.r2.dev/filename.png
+            return rtrim($r2PublicUrl, '/') . '/' . $this->avatar;
+        }
+        
+        // Legacy: Check if avatar path starts with 'avatars/' - could be R2 or local
+        if (str_starts_with($this->avatar, 'avatars/')) {
+            // Check if file exists in local storage first (more reliable check)
+            if (Storage::disk('public')->exists($this->avatar)) {
+                // File is in local storage
+                return asset('storage/' . $this->avatar);
+            }
+            
+            // If not in local storage, assume it's in R2
+            // (exists() check with R2 may not work reliably, so we assume R2 if not local)
+            return rtrim($r2PublicUrl, '/') . '/' . $this->avatar;
+        }
+
+        // Fallback to local storage for backward compatibility
+        return asset('storage/' . $this->avatar);
     }
 }

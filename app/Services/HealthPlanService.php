@@ -4,12 +4,20 @@ namespace App\Services;
 
 use App\Models\HealthProfile;
 use App\Models\HealthPlan;
+use App\Services\GeminiService;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 use Carbon\Carbon;
 
 class HealthPlanService
 {
+    protected $geminiService;
+
+    public function __construct(GeminiService $geminiService)
+    {
+        $this->geminiService = $geminiService;
+    }
+
     /**
      * Generate health plan using rule-based logic and AI
      */
@@ -102,23 +110,21 @@ class HealthPlanService
      */
     private function buildPrompt(HealthProfile $profile, array $rules, int $durationDays): string
     {
-        $prompt = "You are a professional health and nutrition coach. Based on the health profile and analysis below, create a personalized {$durationDays}-day health plan.\n\n";
+        $prompt = "Tạo kế hoạch sức khỏe {$durationDays} ngày cá nhân hóa.\n\n";
 
-        $prompt .= "USER PROFILE:\n";
-        $prompt .= "- Age: " . ($profile->age ?? 'Not specified') . "\n";
-        $prompt .= "- Gender: " . ($profile->gender ?? 'Not specified') . "\n";
-        $prompt .= "- BMI: " . ($profile->bmi ?? 'Not calculated') . "\n";
+        $prompt .= "HỒ SƠ:\n";
+        $prompt .= "- Tuổi: " . ($profile->age ?? 'N/A') . ", Giới tính: " . ($profile->gender ?? 'N/A') . ", BMI: " . ($profile->bmi ?? 'N/A') . "\n";
         
         if ($profile->height && $profile->weight) {
-            $prompt .= "- Height: {$profile->height} cm, Weight: {$profile->weight} kg\n";
+            $prompt .= "- Chiều cao: {$profile->height}cm, Cân nặng: {$profile->weight}kg\n";
         }
         
         if ($profile->medical_history) {
-            $prompt .= "- Medical History: {$profile->medical_history}\n";
+            $prompt .= "- Tiền sử: {$profile->medical_history}\n";
         }
         
         if ($profile->allergies) {
-            $prompt .= "- Allergies: {$profile->allergies}\n";
+            $prompt .= "- Dị ứng: {$profile->allergies}\n";
         }
         
         if ($profile->lifestyle_habits) {
@@ -126,107 +132,104 @@ class HealthPlanService
                 ? $profile->lifestyle_habits 
                 : json_decode($profile->lifestyle_habits, true);
             if ($habits) {
-                $prompt .= "- Lifestyle Habits: " . json_encode($habits) . "\n";
+                $habitsSummary = [];
+                if (isset($habits['exercise_frequency'])) $habitsSummary[] = "Tập: {$habits['exercise_frequency']}";
+                if (isset($habits['sleep_hours'])) $habitsSummary[] = "Ngủ: {$habits['sleep_hours']}h";
+                if (isset($habits['smoking']) && $habits['smoking']) $habitsSummary[] = "Hút thuốc";
+                if (isset($habits['alcohol'])) $habitsSummary[] = "Rượu: {$habits['alcohol']}";
+                if (!empty($habitsSummary)) {
+                    $prompt .= "- Thói quen: " . implode(", ", $habitsSummary) . "\n";
+                }
             }
         }
         
         if ($profile->blood_pressure_systolic) {
-            $prompt .= "- Blood Pressure: {$profile->blood_pressure_systolic}/{$profile->blood_pressure_diastolic} mmHg\n";
+            $prompt .= "- Huyết áp: {$profile->blood_pressure_systolic}/{$profile->blood_pressure_diastolic}\n";
         }
         
         if ($profile->blood_sugar) {
-            $prompt .= "- Blood Sugar: {$profile->blood_sugar} mg/dL\n";
+            $prompt .= "- Đường huyết: {$profile->blood_sugar}\n";
         }
 
-        $prompt .= "\nANALYSIS & RECOMMENDATIONS:\n";
-        $prompt .= json_encode($rules, JSON_PRETTY_PRINT) . "\n\n";
+        if (!empty($rules)) {
+            $prompt .= "\nPHÂN TÍCH:\n";
+            if (isset($rules['priority'])) $prompt .= "- Ưu tiên: {$rules['priority']}\n";
+            if (isset($rules['goals'])) $prompt .= "- Mục tiêu: " . implode(", ", $rules['goals']) . "\n";
+            if (isset($rules['restrictions'])) $prompt .= "- Hạn chế: " . implode("; ", $rules['restrictions']) . "\n";
+        }
 
-        $prompt .= "REQUIREMENTS:\n";
-        $prompt .= "1. Create a {$durationDays}-day plan, EACH DAY MUST BE DIFFERENT (meals, exercises, lifestyle tips)\n";
-        $prompt .= "2. Write ALL content in clear, easy-to-understand ENGLISH\n";
-        $prompt .= "3. Personalize based on health profile, medical history, allergies, and goals\n";
-        $prompt .= "4. Realistic portions and safe exercises for the user\n\n";
+        $prompt .= "\nYÊU CẦU:\n";
+        $prompt .= "1. Tạo {$durationDays} ngày, mỗi ngày khác nhau\n";
+        $prompt .= "2. MỖI BỮA ĂN có 2-3 lựa chọn để người dùng chọn\n";
+        $prompt .= "3. Mỗi ngày: 3-5 bữa ăn, 1-2 bài tập, 2-3 lối sống\n";
+        $prompt .= "4. Viết TIẾNG VIỆT, ngắn gọn, thực tế\n";
+        $prompt .= "5. Trả về JSON thuần (không markdown)\n\n";
 
-        $prompt .= "RETURN JSON IN THIS EXACT STRUCTURE (NO EXTRA EXPLANATION):\n";
-        $prompt .= '```json
-{
+        $prompt .= "CẤU TRÚC JSON:\n";
+        $prompt .= '{
   "daily_plans": [
     {
       "day": 1,
       "meals": [
-        {"time": "Breakfast", "food": "Oatmeal with unsweetened milk and banana", "calories": 300},
-        {"time": "Lunch", "food": "Grilled chicken breast, steamed vegetables, brown rice", "calories": 450},
-        {"time": "Dinner", "food": "Pan-seared salmon, green salad", "calories": 400}
+        {
+          "time": "Bữa sáng",
+          "options": [
+            {"food": "Lựa chọn 1", "calories": 300},
+            {"food": "Lựa chọn 2", "calories": 320},
+            {"food": "Lựa chọn 3", "calories": 280}
+          ]
+        },
+        {
+          "time": "Bữa trưa",
+          "options": [
+            {"food": "Lựa chọn 1", "calories": 450},
+            {"food": "Lựa chọn 2", "calories": 470}
+          ]
+        }
       ],
       "exercises": [
-        {"type": "Cardio", "name": "Brisk walking", "duration": 30}
+        {"type": "Cardio", "name": "Tên bài tập", "duration": 30}
       ],
-      "lifestyle": ["Drink 8 glasses of water", "Sleep 7-8 hours"],
-      "notes": "First day, get familiar with healthy eating habits."
+      "lifestyle": ["Mẹo 1", "Mẹo 2"],
+      "notes": "Ghi chú ngắn"
     }
   ],
-  "overall_recommendations": ["Overall recommendation 1", "Recommendation 2"],
+  "overall_recommendations": ["Khuyến nghị 1", "Khuyến nghị 2"],
   "milestones": [
-    {"day": 3, "goal": "Day 3 goal"},
-    {"day": 7, "goal": "Complete first week"}
+    {"day": 3, "goal": "Mục tiêu ngắn"},
+    {"day": 7, "goal": "Mục tiêu ngắn"}
   ]
-}
-```';
+}';
 
         return $prompt;
     }
 
     /**
-     * Get AI response (using OpenAI API - REQUIRED)
+     * Get AI response (using Gemini API - REQUIRED)
      */
     private function getAIResponse(string $prompt): string
     {
-        // Check if OpenAI API key is configured
-        $apiKey = env('OPENAI_API_KEY');
-        
-        if (!$apiKey) {
-            throw new \RuntimeException('OPENAI_API_KEY chưa được cấu hình trong file .env. Vui lòng thêm API key của bạn để sử dụng tính năng này.');
-        }
-
         try {
-            // Tăng timeout PHP script để đợi OpenAI
-            set_time_limit(120); // 2 phút
+            $systemInstruction = 'Chuyên gia sức khỏe. Tạo kế hoạch cá nhân hóa. Mỗi ngày khác nhau. Trả JSON thuần, không markdown, không giải thích. TIẾNG VIỆT ngắn gọn.';
             
-            $response = Http::timeout(90) // Timeout request 90s
-                ->withOptions(['verify' => false]) // Tắt verify SSL cho development
-                ->withHeaders([
-                    'Authorization' => 'Bearer ' . $apiKey,
-                    'Content-Type' => 'application/json',
-                ])->post('https://api.openai.com/v1/chat/completions', [
-                    'model' => 'gpt-4o-mini',
-                    'messages' => [
-                        [
-                            'role' => 'system',
-                            'content' => 'You are a professional health and nutrition expert. Create highly personalized health plans based on user profiles. EACH DAY MUST BE DIFFERENT. Return valid JSON in the EXACT format requested, NO markdown, NO explanation. Write ALL content in ENGLISH.'
-                        ],
-                        [
-                            'role' => 'user',
-                            'content' => $prompt
-                        ]
-                    ],
-                    'temperature' => 0.7,
-                    'max_tokens' => 4000,
-                    'response_format' => ['type' => 'json_object'], // Bắt buộc trả JSON
-                ]);
-
-            if ($response->successful()) {
-                $content = $response->json()['choices'][0]['message']['content'] ?? null;
-                if (!$content) {
-                    throw new \RuntimeException('OpenAI trả về phản hồi trống');
-                }
-                Log::info('OpenAI API successful response received');
-                return $content;
-            } else {
-                $error = $response->json()['error']['message'] ?? 'Unknown API error';
-                throw new \RuntimeException('Lỗi OpenAI API: ' . $error);
-            }
+            $content = $this->geminiService->generateJsonContent(
+                $prompt,
+                $systemInstruction,
+                [],
+                [
+                    'temperature' => 0.8,
+                    'max_tokens' => 16384, // Max for gemini-2.5-flash
+                    'timeout' => 180, // Tăng timeout lên 3 phút
+                    'http_timeout' => 120, // Tăng HTTP timeout lên 2 phút
+                    'model' => 'gemini-2.5-flash',
+                    'retry' => 2 // Retry 2 lần nếu fail
+                ]
+            );
+            
+            Log::info('Gemini API successful response received');
+            return $content;
         } catch (\Exception $e) {
-            Log::error('OpenAI API Error: ' . $e->getMessage());
+            Log::error('Gemini API Error: ' . $e->getMessage());
             throw new \RuntimeException('Không thể tạo kế hoạch từ AI: ' . $e->getMessage());
         }
     }
@@ -269,6 +272,18 @@ class HealthPlanService
             if (!isset($dayPlan['meals']) || !isset($dayPlan['exercises']) || !isset($dayPlan['lifestyle'])) {
                 Log::error('Day plan missing required fields', ['day_plan' => $dayPlan]);
                 throw new \RuntimeException('Kế hoạch ngày thiếu thông tin bắt buộc (meals, exercises, lifestyle).');
+            }
+            
+            // Validate meal structure (support both old and new format)
+            foreach ($dayPlan['meals'] as $meal) {
+                // New format: meals have "options" array
+                if (isset($meal['options'])) {
+                    if (!is_array($meal['options']) || empty($meal['options'])) {
+                        Log::error('Meal options invalid', ['meal' => $meal]);
+                        throw new \RuntimeException('Lựa chọn bữa ăn không hợp lệ.');
+                    }
+                }
+                // Old format: meals have "food" directly - this is still valid
             }
         }
 

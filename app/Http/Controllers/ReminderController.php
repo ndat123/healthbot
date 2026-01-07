@@ -2,98 +2,89 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Reminder;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use App\Services\ReminderService;
+use App\Models\Reminder;
 use Carbon\Carbon;
 
 class ReminderController extends Controller
 {
+    protected $reminderService;
+
+    public function __construct(ReminderService $reminderService)
+    {
+        $this->reminderService = $reminderService;
+    }
+
     /**
-     * Store new reminder
+     * Hiển thị danh sách reminders của user
+     */
+    public function index()
+    {
+        $user = Auth::user();
+        $reminders = $this->reminderService->getUserReminders($user, true);
+
+        return view('reminders.index', compact('reminders'));
+    }
+
+    /**
+     * Tạo reminder mới
      */
     public function store(Request $request)
     {
-        $validated = $request->validate([
-            'reminder_type' => 'required|in:medication,water,exercise,meal,appointment,other',
-            'title' => 'required|string|max:255',
-            'description' => 'nullable|string|max:1000',
-            'reminder_time' => 'required|date_format:H:i',
-            'reminder_days' => 'nullable|array',
-            'reminder_days.*' => 'integer|min:1|max:7',
-            'is_recurring' => 'boolean',
-            'start_date' => 'required|date',
-            'end_date' => 'nullable|date|after:start_date',
-        ]);
-
-        $reminder = Reminder::create([
-            'user_id' => Auth::id(),
-            'reminder_type' => $validated['reminder_type'],
-            'title' => $validated['title'],
-            'description' => $validated['description'] ?? null,
-            'reminder_time' => $validated['reminder_time'],
-            'reminder_days' => $validated['reminder_days'] ?? [1,2,3,4,5,6,7], // All days by default
-            'is_recurring' => $validated['is_recurring'] ?? true,
-            'start_date' => $validated['start_date'],
-            'end_date' => $validated['end_date'] ?? null,
-            'is_active' => true,
-        ]);
-
-        return redirect()->route('health-tracking.index')
-            ->with('success', 'Reminder created successfully!');
-    }
-
-    /**
-     * Update reminder
-     */
-    public function update(Request $request, $id)
-    {
-        $reminder = Reminder::where('user_id', Auth::id())->findOrFail($id);
+        $user = Auth::user();
 
         $validated = $request->validate([
-            'reminder_type' => 'required|in:medication,water,exercise,meal,appointment,other',
             'title' => 'required|string|max:255',
-            'description' => 'nullable|string|max:1000',
-            'reminder_time' => 'required|date_format:H:i',
-            'reminder_days' => 'nullable|array',
-            'reminder_days.*' => 'integer|min:1|max:7',
+            'description' => 'nullable|string',
+            'reminder_type' => 'required|in:health_checkup,appointment',
+            'reminder_time' => 'required|date',
             'is_recurring' => 'boolean',
-            'is_active' => 'boolean',
-            'start_date' => 'required|date',
-            'end_date' => 'nullable|date|after:start_date',
+            'reminder_days' => 'nullable|array',
         ]);
 
-        $reminder->update($validated);
+        $reminderTime = Carbon::parse($validated['reminder_time']);
 
-        return redirect()->route('health-tracking.index')
-            ->with('success', 'Reminder updated successfully!');
+        if ($validated['reminder_type'] === 'health_checkup') {
+            $reminder = $this->reminderService->createHealthReminder(
+                $user,
+                $validated['title'],
+                $validated['description'] ?? '',
+                $reminderTime,
+                $validated['reminder_days'] ?? [],
+                $validated['is_recurring'] ?? false
+            );
+        } else {
+            $reminder = $this->reminderService->createAppointmentReminder(
+                $user,
+                $validated['title'],
+                $validated['description'] ?? '',
+                $reminderTime
+            );
+        }
+
+        if ($reminder) {
+            return back()->with('success', 'Tạo nhắc nhở thành công!');
+        }
+
+        return back()->with('error', 'Không thể tạo nhắc nhở. Vui lòng kiểm tra cài đặt của bạn.');
     }
 
     /**
-     * Delete reminder
+     * Tắt reminder
      */
-    public function destroy($id)
+    public function deactivate(Reminder $reminder)
     {
-        $reminder = Reminder::where('user_id', Auth::id())->findOrFail($id);
-        $reminder->delete();
+        // Kiểm tra quyền
+        if ($reminder->user_id !== Auth::id()) {
+            abort(403);
+        }
 
-        return redirect()->route('health-tracking.index')
-            ->with('success', 'Reminder deleted successfully!');
-    }
+        if ($this->reminderService->deactivateReminder($reminder)) {
+            return back()->with('success', 'Đã tắt nhắc nhở!');
+        }
 
-    /**
-     * Toggle reminder active status
-     */
-    public function toggle($id)
-    {
-        $reminder = Reminder::where('user_id', Auth::id())->findOrFail($id);
-        $reminder->is_active = !$reminder->is_active;
-        $reminder->save();
-
-        return response()->json([
-            'success' => true,
-            'is_active' => $reminder->is_active,
-        ]);
+        return back()->with('error', 'Không thể tắt nhắc nhở.');
     }
 }
-

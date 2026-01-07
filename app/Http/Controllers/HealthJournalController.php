@@ -105,6 +105,20 @@ class HealthJournalController extends Controller
     }
 
     /**
+     * Delete journal entry
+     */
+    public function destroy($id)
+    {
+        $journal = HealthJournal::where('user_id', Auth::id())->findOrFail($id);
+        
+        $journalDate = $journal->journal_date->format('d/m/Y');
+        $journal->delete();
+
+        return redirect()->route('health-journal.index')
+            ->with('success', "Journal entry for {$journalDate} has been deleted successfully.");
+    }
+
+    /**
      * Get statistics
      */
     private function getStatistics(int $userId): array

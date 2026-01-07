@@ -5,12 +5,20 @@ namespace App\Services;
 use App\Models\AIConsultation;
 use App\Models\HealthProfile;
 use App\Models\User;
+use App\Helpers\SettingsHelper;
+use App\Services\GeminiService;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 
 class AIConsultationService
 {
+    protected $geminiService;
+
+    public function __construct(GeminiService $geminiService)
+    {
+        $this->geminiService = $geminiService;
+    }
     /**
      * Process user message and generate AI response
      */
@@ -46,14 +54,25 @@ class AIConsultationService
             // Build AI prompt
             $prompt = $this->buildPrompt($message, $context, $consultationType, $emergencyLevel);
 
-            // Get AI response
-            $aiResponse = $this->getAIResponse($prompt, $conversationHistory);
+            // Get AI response (sử dụng language từ settings)
+            $language = SettingsHelper::getUserLanguage($user);
+            $aiResponse = $this->getAIResponse($prompt, $conversationHistory, $language);
 
             // Extract suggested specialists if applicable
             $suggestedSpecialists = $this->extractSpecialistSuggestions($aiResponse, $consultationType);
 
             // Determine topic
             $topic = $this->extractTopic($message, $aiResponse);
+            
+            // Lưu interaction cho AI learning nếu user cho phép
+            if (SettingsHelper::allowAILearning($user)) {
+                // Log interaction để cải thiện AI (có thể lưu vào database sau)
+                Log::info('AI learning interaction saved', [
+                    'user_id' => $user->id,
+                    'consultation_type' => $consultationType,
+                    'topic' => $topic,
+                ]);
+            }
 
             return [
                 'session_id' => $sessionId,
@@ -76,7 +95,7 @@ class AIConsultationService
                 'topic' => 'Error',
                 'consultation_type' => 'general',
                 'user_message' => $message,
-                'ai_response' => 'I apologize, but I encountered an error processing your message. Please try again or rephrase your question.',
+                'ai_response' => 'Xin lỗi, tôi đã gặp lỗi khi xử lý tin nhắn của bạn. Vui lòng thử lại hoặc diễn đạt lại câu hỏi của bạn.',
                 'emergency_level' => 'low',
                 'context_data' => [],
                 'suggested_specialists' => null,
@@ -183,22 +202,22 @@ class AIConsultationService
         string $consultationType,
         string $emergencyLevel
     ): string {
-        $prompt = "You are AI HealthBot, a professional AI health consultant. Provide helpful, accurate, and personalized health advice in ENGLISH.\n\n";
+        $prompt = "Bạn là AI HealthBot, một chuyên gia tư vấn sức khỏe AI chuyên nghiệp. Cung cấp lời khuyên sức khỏe hữu ích, chính xác và cá nhân hóa bằng TIẾNG VIỆT.\n\n";
         
-        $prompt .= "CRITICAL: Always include medical disclaimers when discussing symptoms or medical conditions. For serious symptoms, immediately recommend seeing a doctor.\n\n";
+        $prompt .= "QUAN TRỌNG: Luôn bao gồm tuyên bố từ chối trách nhiệm y tế khi thảo luận về triệu chứng hoặc tình trạng y tế. Đối với các triệu chứng nghiêm trọng, ngay lập tức khuyên nên gặp bác sĩ.\n\n";
 
         // Add user context if available
         if (isset($context['user_profile'])) {
             $profile = $context['user_profile'];
-            $prompt .= "USER PROFILE:\n";
-            if ($profile['age']) $prompt .= "- Age: {$profile['age']}\n";
-            if ($profile['gender']) $prompt .= "- Gender: {$profile['gender']}\n";
+            $prompt .= "HỒ SƠ NGƯỜI DÙNG:\n";
+            if ($profile['age']) $prompt .= "- Tuổi: {$profile['age']}\n";
+            if ($profile['gender']) $prompt .= "- Giới tính: {$profile['gender']}\n";
             if ($profile['bmi']) $prompt .= "- BMI: {$profile['bmi']}\n";
-            if ($profile['medical_history']) $prompt .= "- Medical History: {$profile['medical_history']}\n";
-            if ($profile['allergies']) $prompt .= "- Allergies: {$profile['allergies']}\n";
+            if ($profile['medical_history']) $prompt .= "- Tiền sử bệnh: {$profile['medical_history']}\n";
+            if ($profile['allergies']) $prompt .= "- Dị ứng: {$profile['allergies']}\n";
             if ($profile['health_goals']) {
                 $goals = is_array($profile['health_goals']) ? implode(', ', $profile['health_goals']) : $profile['health_goals'];
-                $prompt .= "- Health Goals: {$goals}\n";
+                $prompt .= "- Mục tiêu sức khỏe: {$goals}\n";
             }
             $prompt .= "\n";
         }
@@ -206,92 +225,83 @@ class AIConsultationService
         // Add consultation type specific instructions
         switch ($consultationType) {
             case 'symptoms':
-                $prompt .= "CONSULTATION TYPE: Symptoms inquiry. Provide initial guidance but EMPHASIZE the importance of professional medical evaluation. DO NOT diagnose.\n";
+                $prompt .= "LOẠI TƯ VẤN: Hỏi về triệu chứng. Cung cấp hướng dẫn ban đầu nhưng NHẤN MẠNH tầm quan trọng của đánh giá y tế chuyên nghiệp. KHÔNG được chẩn đoán.\n";
                 break;
             case 'nutrition':
-                $prompt .= "CONSULTATION TYPE: Nutrition advice. Provide personalized dietary recommendations based on their profile.\n";
+                $prompt .= "LOẠI TƯ VẤN: Tư vấn dinh dưỡng. Cung cấp khuyến nghị chế độ ăn uống cá nhân hóa dựa trên hồ sơ của họ.\n";
                 break;
             case 'lifestyle':
-                $prompt .= "CONSULTATION TYPE: Lifestyle and habits. Provide actionable, personalized recommendations.\n";
+                $prompt .= "LOẠI TƯ VẤN: Lối sống và thói quen. Cung cấp các khuyến nghị có thể thực hiện được, cá nhân hóa.\n";
                 break;
             case 'specialist_referral':
-                $prompt .= "CONSULTATION TYPE: Specialist referral. Suggest appropriate medical specialists based on their needs and symptoms.\n";
+                $prompt .= "LOẠI TƯ VẤN: Giới thiệu chuyên khoa. Đề xuất các chuyên gia y tế phù hợp dựa trên nhu cầu và triệu chứng của họ.\n";
                 break;
         }
 
         // Add emergency level warning
         if ($emergencyLevel === 'critical' || $emergencyLevel === 'high') {
-            $prompt .= "\n⚠️ URGENT: The user's message suggests a SERIOUS health concern. BEGIN your response by STRONGLY recommending IMMEDIATE medical attention (call 911 or go to ER).\n";
+            $prompt .= "\n⚠️ KHẨN CẤP: Tin nhắn của người dùng cho thấy một vấn đề sức khỏe NGHIÊM TRỌNG. BẮT ĐẦU phản hồi của bạn bằng cách MẠNH MẼ khuyên nên tìm kiếm sự chăm sóc y tế NGAY LẬP TỨC (gọi 115 hoặc đến phòng cấp cứu).\n";
         }
 
-        $prompt .= "\nUser's message: {$message}\n\n";
-        $prompt .= "REQUIREMENTS:\n";
-        $prompt .= "1. Respond in clear, empathetic ENGLISH\n";
-        $prompt .= "2. Include medical disclaimer if discussing symptoms/conditions\n";
-        $prompt .= "3. Be concise but thorough (200-400 words)\n";
-        $prompt .= "4. Use bullet points for clarity\n";
-        $prompt .= "5. For emergencies: recommend immediate medical attention FIRST\n";
+        $prompt .= "\nTin nhắn của người dùng: {$message}\n\n";
+        $prompt .= "YÊU CẦU:\n";
+        $prompt .= "1. Phản hồi bằng TIẾNG VIỆT rõ ràng, đồng cảm\n";
+        $prompt .= "2. Bao gồm tuyên bố từ chối trách nhiệm y tế nếu thảo luận về triệu chứng/tình trạng\n";
+        $prompt .= "3. Ngắn gọn nhưng đầy đủ (200-400 từ)\n";
+        $prompt .= "4. Sử dụng dấu đầu dòng để rõ ràng\n";
+        $prompt .= "5. Đối với trường hợp khẩn cấp: khuyên tìm kiếm sự chăm sóc y tế ngay lập tức TRƯỚC TIÊN\n";
 
         return $prompt;
     }
 
     /**
-     * Get AI response from OpenAI - REQUIRED
+     * Get AI response from Gemini API
      */
-    private function getAIResponse(string $prompt, array $conversationHistory = []): string
+    private function getAIResponse(string $prompt, array $conversationHistory = [], string $language = 'vi'): string
     {
-        $apiKey = env('OPENAI_API_KEY');
-
-        if (!$apiKey) {
-            throw new \RuntimeException('OPENAI_API_KEY is not configured in .env file. Please add your OpenAI API key.');
-        }
-
         try {
-            set_time_limit(60); // 1 minute for chat response
-            
-            // Build messages array for chat completion
-            $messages = [
-                [
-                    'role' => 'system',
-                    'content' => 'You are AI HealthBot, a professional AI health consultant. ALWAYS include appropriate medical disclaimers when discussing medical conditions or symptoms. Be empathetic, clear, helpful, and respond in ENGLISH. For emergency symptoms (chest pain, stroke, severe bleeding), immediately recommend seeking emergency medical attention.'
-                ]
+            // Build system instruction với language setting
+            $languageMap = [
+                'vi' => 'TIẾNG VIỆT',
+                'en' => 'ENGLISH',
+                'es' => 'ESPAÑOL',
+                'fr' => 'FRANÇAIS',
             ];
+            $responseLanguage = $languageMap[$language] ?? 'TIẾNG VIỆT';
+            
+            $systemInstruction = "Bạn là AI HealthBot, một chuyên gia tư vấn sức khỏe AI chuyên nghiệp. LUÔN bao gồm các tuyên bố từ chối trách nhiệm y tế phù hợp khi thảo luận về tình trạng y tế hoặc triệu chứng. Hãy đồng cảm, rõ ràng, hữu ích và phản hồi bằng {$responseLanguage}. Đối với các triệu chứng khẩn cấp (đau ngực, đột quỵ, chảy máu nghiêm trọng), ngay lập tức khuyên nên tìm kiếm sự chăm sóc y tế khẩn cấp.";
 
-            // Add conversation history (last 10 messages for context)
+            // Convert conversation history to format expected by GeminiService
+            $formattedHistory = [];
             foreach (array_slice($conversationHistory, -10) as $history) {
-                $messages[] = ['role' => 'user', 'content' => $history['user_message']];
-                $messages[] = ['role' => 'assistant', 'content' => $history['ai_response']];
-            }
-
-            // Add current message
-            $messages[] = ['role' => 'user', 'content' => $prompt];
-
-            $response = Http::timeout(45)
-                ->withOptions(['verify' => false])
-                ->withHeaders([
-                    'Authorization' => 'Bearer ' . $apiKey,
-                    'Content-Type' => 'application/json',
-                ])->post('https://api.openai.com/v1/chat/completions', [
-                    'model' => 'gpt-4o-mini',
-                    'messages' => $messages,
-                    'temperature' => 0.7,
-                    'max_tokens' => 1500,
-                ]);
-
-            if ($response->successful()) {
-                $content = $response->json()['choices'][0]['message']['content'] ?? null;
-                if (!$content) {
-                    throw new \RuntimeException('OpenAI returned empty response');
+                if (isset($history['user_message'])) {
+                    $formattedHistory[] = [
+                        'user_message' => $history['user_message'],
+                        'ai_response' => $history['ai_response'] ?? ''
+                    ];
                 }
-                Log::info('AI Consultation API successful');
-                return $content;
-            } else {
-                $error = $response->json()['error']['message'] ?? 'Unknown API error';
-                throw new \RuntimeException('OpenAI API error: ' . $error);
             }
+
+            // Use GeminiService to generate response
+            $content = $this->geminiService->generateContent(
+                $prompt,
+                $systemInstruction,
+                $formattedHistory,
+                [
+                    'temperature' => 0.7,
+                    'max_tokens' => 2000,
+                    'timeout' => 120,
+                    'http_timeout' => 90,
+                    'model' => 'gemini-2.5-flash',
+                    'retry' => 2
+                ]
+            );
+
+            Log::info('AI Consultation API successful');
+            return $content;
         } catch (\Exception $e) {
-            Log::error('OpenAI Consultation API Error: ' . $e->getMessage());
-            throw new \RuntimeException('Failed to get AI response: ' . $e->getMessage());
+            Log::error('Gemini Consultation API Error: ' . $e->getMessage());
+            throw new \RuntimeException('Không thể lấy phản hồi từ AI: ' . $e->getMessage());
         }
     }
 

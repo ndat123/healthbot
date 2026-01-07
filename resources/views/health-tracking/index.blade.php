@@ -4,8 +4,8 @@
 <div class="min-h-screen bg-gradient-to-br from-purple-50 to-pink-50 py-12 px-4 sm:px-6 lg:px-8">
     <div class="max-w-7xl mx-auto">
         <div class="text-center mb-8">
-            <h1 class="text-4xl font-bold text-gray-900 mb-4">Health Tracking Dashboard</h1>
-            <p class="text-xl text-gray-600">Track your health metrics, view progress, and manage reminders</p>
+            <h1 class="text-4xl font-bold text-gray-900 mb-4">Bảng Điều Khiển Theo Dõi Sức Khỏe</h1>
+            <p class="text-xl text-gray-600">Theo dõi các chỉ số sức khỏe, xem tiến trình và quản lý nhắc nhở</p>
         </div>
 
         @if(session('success'))
@@ -19,54 +19,61 @@
             <div class="lg:col-span-2 space-y-6">
                 <!-- Add Metric Form -->
                 <div class="bg-white rounded-xl shadow-lg p-6">
-                    <h2 class="text-xl font-bold text-gray-800 mb-4">Record Health Metric</h2>
+                    <h2 class="text-xl font-bold text-gray-800 mb-2">Ghi Nhận Chỉ Số Sức Khỏe</h2>
+                    <p class="text-sm text-gray-600 mb-4">💡 Chỉ nhập những chỉ số bạn đã đo được. Không cần nhập tất cả các trường mỗi ngày.</p>
                     <form action="{{ route('health-tracking.metric.store') }}" method="POST" class="space-y-4">
                         @csrf
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <div>
-                                <label for="recorded_date" class="block text-sm font-medium text-gray-700 mb-1">Date</label>
+                                <label for="recorded_date" class="block text-sm font-medium text-gray-700 mb-1">Ngày <span class="text-red-500">*</span></label>
                                 <input type="date" id="recorded_date" name="recorded_date" 
                                        value="{{ date('Y-m-d') }}" required
                                        class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500">
                             </div>
                             <div>
-                                <label for="weight" class="block text-sm font-medium text-gray-700 mb-1">Weight (kg)</label>
+                                <label for="weight" class="block text-sm font-medium text-gray-700 mb-1">Cân Nặng (kg) <span class="text-gray-400 text-xs">(tùy chọn)</span></label>
                                 <input type="number" id="weight" name="weight" step="0.1" min="20" max="300"
+                                       placeholder="Ví dụ: 65.5"
                                        class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500">
                             </div>
                             <div>
-                                <label for="height" class="block text-sm font-medium text-gray-700 mb-1">Height (cm)</label>
+                                <label for="height" class="block text-sm font-medium text-gray-700 mb-1">Chiều Cao (cm) <span class="text-gray-400 text-xs">(tùy chọn)</span></label>
                                 <input type="number" id="height" name="height" step="0.1" min="50" max="250"
+                                       placeholder="Ví dụ: 170"
                                        class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500">
                             </div>
                             <div>
-                                <label for="blood_pressure_systolic" class="block text-sm font-medium text-gray-700 mb-1">Blood Pressure (Systolic)</label>
+                                <label for="blood_pressure_systolic" class="block text-sm font-medium text-gray-700 mb-1">Huyết Áp (Tâm Thu) <span class="text-gray-400 text-xs">(tùy chọn)</span></label>
                                 <input type="number" id="blood_pressure_systolic" name="blood_pressure_systolic" min="50" max="250"
+                                       placeholder="Ví dụ: 120"
                                        class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500">
                             </div>
                             <div>
-                                <label for="blood_pressure_diastolic" class="block text-sm font-medium text-gray-700 mb-1">Blood Pressure (Diastolic)</label>
+                                <label for="blood_pressure_diastolic" class="block text-sm font-medium text-gray-700 mb-1">Huyết Áp (Tâm Trương) <span class="text-gray-400 text-xs">(tùy chọn)</span></label>
                                 <input type="number" id="blood_pressure_diastolic" name="blood_pressure_diastolic" min="30" max="150"
+                                       placeholder="Ví dụ: 80"
                                        class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500">
                             </div>
                             <div>
-                                <label for="blood_sugar" class="block text-sm font-medium text-gray-700 mb-1">Blood Sugar (mg/dL)</label>
+                                <label for="blood_sugar" class="block text-sm font-medium text-gray-700 mb-1">Đường Huyết (mg/dL) <span class="text-gray-400 text-xs">(tùy chọn)</span></label>
                                 <input type="number" id="blood_sugar" name="blood_sugar" step="0.1" min="50" max="500"
+                                       placeholder="Ví dụ: 95"
                                        class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500">
                             </div>
                             <div>
-                                <label for="heart_rate" class="block text-sm font-medium text-gray-700 mb-1">Heart Rate (bpm)</label>
+                                <label for="heart_rate" class="block text-sm font-medium text-gray-700 mb-1">Nhịp Tim (bpm) <span class="text-gray-400 text-xs">(tùy chọn)</span></label>
                                 <input type="number" id="heart_rate" name="heart_rate" min="40" max="200"
+                                       placeholder="Ví dụ: 72"
                                        class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500">
                             </div>
                         </div>
                         <div>
-                            <label for="notes" class="block text-sm font-medium text-gray-700 mb-1">Notes</label>
+                            <label for="notes" class="block text-sm font-medium text-gray-700 mb-1">Ghi Chú</label>
                             <textarea id="notes" name="notes" rows="2"
                                       class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500"></textarea>
                         </div>
                         <button type="submit" class="bg-gradient-to-r from-purple-600 to-pink-600 text-white px-6 py-2 rounded-lg hover:from-purple-700 hover:to-pink-700 transition-colors">
-                            Record Metric
+                            Ghi Nhận
                         </button>
                     </form>
                 </div>
@@ -74,17 +81,17 @@
                 <!-- Charts -->
                 <div class="bg-white rounded-xl shadow-lg p-6">
                     <div class="flex justify-between items-center mb-4">
-                        <h2 class="text-xl font-bold text-gray-800">Health Progress Charts</h2>
+                        <h2 class="text-xl font-bold text-gray-800">Biểu Đồ Tiến Trình Sức Khỏe</h2>
                         <select id="chart-days" class="px-3 py-1 border border-gray-300 rounded-lg text-sm">
-                            <option value="7">Last 7 days</option>
-                            <option value="30" selected>Last 30 days</option>
-                            <option value="90">Last 90 days</option>
+                            <option value="7">7 ngày qua</option>
+                            <option value="30" selected>30 ngày qua</option>
+                            <option value="90">90 ngày qua</option>
                         </select>
                     </div>
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <!-- Weight Chart -->
                         <div class="bg-gray-50 p-3 rounded-lg border border-gray-100">
-                            <h3 class="text-xs font-semibold text-gray-700 mb-2 uppercase tracking-wider">Weight (kg)</h3>
+                            <h3 class="text-xs font-semibold text-gray-700 mb-2 uppercase tracking-wider">Cân Nặng (kg)</h3>
                             <div class="h-48">
                                 <canvas id="weightChart"></canvas>
                             </div>
@@ -98,14 +105,14 @@
                         </div>
                         <!-- Blood Pressure Chart -->
                         <div class="bg-gray-50 p-3 rounded-lg border border-gray-100">
-                            <h3 class="text-xs font-semibold text-gray-700 mb-2 uppercase tracking-wider">Blood Pressure</h3>
+                            <h3 class="text-xs font-semibold text-gray-700 mb-2 uppercase tracking-wider">Huyết Áp</h3>
                             <div class="h-48">
                                 <canvas id="bpChart"></canvas>
                             </div>
                         </div>
                         <!-- Blood Sugar Chart -->
                         <div class="bg-gray-50 p-3 rounded-lg border border-gray-100">
-                            <h3 class="text-xs font-semibold text-gray-700 mb-2 uppercase tracking-wider">Blood Sugar (mg/dL)</h3>
+                            <h3 class="text-xs font-semibold text-gray-700 mb-2 uppercase tracking-wider">Đường Huyết (mg/dL)</h3>
                             <div class="h-48">
                                 <canvas id="bsChart"></canvas>
                             </div>
@@ -119,9 +126,9 @@
                 <!-- Reminders -->
                 <div class="bg-white rounded-xl shadow-lg p-6">
                     <div class="flex justify-between items-center mb-4">
-                        <h2 class="text-xl font-bold text-gray-800">Reminders</h2>
+                        <h2 class="text-xl font-bold text-gray-800">Nhắc Nhở</h2>
                         <button id="add-reminder-btn" class="text-purple-600 hover:text-purple-800 text-sm font-medium">
-                            + Add
+                            + Thêm
                         </button>
                     </div>
                     <div class="space-y-3">
@@ -141,34 +148,43 @@
                                     </form>
                                 </div>
                                 <p class="text-xs text-gray-500 mb-2">{{ ucfirst($reminder->reminder_type) }}</p>
-                                <form action="{{ route('health-tracking.reminder.delete', $reminder->id) }}" method="POST" class="inline" onsubmit="return confirm('Delete this reminder?')">
+                                <form action="{{ route('health-tracking.reminder.delete', $reminder->id) }}" method="POST" class="inline" onsubmit="return confirm('Xóa nhắc nhở này?')">
                                     @csrf
                                     @method('DELETE')
-                                    <button type="submit" class="text-xs text-red-600 hover:text-red-800">Delete</button>
+                                    <button type="submit" class="text-xs text-red-600 hover:text-red-800">Xóa</button>
                                 </form>
                             </div>
                         @empty
-                            <p class="text-sm text-gray-500 text-center py-4">No reminders yet</p>
+                            <p class="text-sm text-gray-500 text-center py-4">Chưa có nhắc nhở nào</p>
                         @endforelse
                     </div>
                 </div>
 
                 <!-- AI Consultation History -->
                 <div class="bg-white rounded-xl shadow-lg p-6">
-                    <h2 class="text-xl font-bold text-gray-800 mb-4">Recent AI Consultations</h2>
+                    <h2 class="text-xl font-bold text-gray-800 mb-4">Tư Vấn AI Gần Đây</h2>
                     <div class="space-y-3">
                         @forelse($consultations as $consultation)
-                            <div class="border-l-4 border-purple-500 pl-3 py-2">
-                                <p class="text-sm font-medium text-gray-800">{{ $consultation->topic ?? 'General' }}</p>
-                                <p class="text-xs text-gray-500 mt-1">{{ \Illuminate\Support\Str::limit($consultation->user_message, 40) }}</p>
-                                <p class="text-xs text-gray-400 mt-1">{{ $consultation->created_at->diffForHumans() }}</p>
+                            <div class="flex items-center justify-between border-l-4 border-purple-500 pl-3 py-2 group hover:bg-purple-50 rounded-r-lg transition-colors">
+                                <div class="flex-1">
+                                    <p class="text-sm font-medium text-gray-800">{{ $consultation->topic ?? 'Chung' }}</p>
+                                    <p class="text-xs text-gray-500 mt-1">{{ \Illuminate\Support\Str::limit($consultation->user_message, 40) }}</p>
+                                    <p class="text-xs text-gray-400 mt-1">{{ $consultation->created_at->diffForHumans() }}</p>
+                                </div>
+                                <button type="button" 
+                                        class="ml-2 p-1 text-red-500 hover:text-red-700 opacity-0 group-hover:opacity-100 transition-opacity delete-consultation-btn"
+                                        data-session-id="{{ $consultation->session_id }}"
+                                        onclick="event.stopPropagation(); deleteConsultationFromDashboard('{{ $consultation->session_id }}', this);"
+                                        title="Xóa consultation">
+                                    🗑️
+                                </button>
                             </div>
                         @empty
-                            <p class="text-sm text-gray-500 text-center py-4">No consultations yet</p>
+                            <p class="text-sm text-gray-500 text-center py-4">Chưa có tư vấn nào</p>
                         @endforelse
                     </div>
                     <a href="{{ route('ai-consultation.index') }}" class="block text-center mt-4 text-purple-600 hover:text-purple-800 text-sm font-medium">
-                        View All →
+                        Xem Tất Cả →
                     </a>
                 </div>
             </div>
@@ -179,28 +195,28 @@
 <!-- Add Reminder Modal -->
 <div id="reminder-modal" class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center">
     <div class="bg-white rounded-xl p-6 max-w-md w-full mx-4">
-        <h2 class="text-xl font-bold text-gray-800 mb-4">Add Reminder</h2>
+        <h2 class="text-xl font-bold text-gray-800 mb-4">Thêm Nhắc Nhở</h2>
         <form action="{{ route('health-tracking.reminder.store') }}" method="POST" class="space-y-4">
             @csrf
             <div>
-                <label for="reminder_type" class="block text-sm font-medium text-gray-700 mb-1">Type</label>
+                <label for="reminder_type" class="block text-sm font-medium text-gray-700 mb-1">Loại</label>
                 <select id="reminder_type" name="reminder_type" required
                         class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500">
-                    <option value="medication">Medication</option>
-                    <option value="water">Water</option>
-                    <option value="exercise">Exercise</option>
-                    <option value="meal">Meal</option>
-                    <option value="appointment">Appointment</option>
-                    <option value="other">Other</option>
+                    <option value="medication">Thuốc</option>
+                    <option value="water">Nước</option>
+                    <option value="exercise">Tập thể dục</option>
+                    <option value="meal">Bữa ăn</option>
+                    <option value="appointment">Cuộc hẹn</option>
+                    <option value="other">Khác</option>
                 </select>
             </div>
             <div>
-                <label for="title" class="block text-sm font-medium text-gray-700 mb-1">Title</label>
+                <label for="title" class="block text-sm font-medium text-gray-700 mb-1">Tiêu Đề</label>
                 <input type="text" id="title" name="title" required
                        class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500">
             </div>
             <div>
-                <label for="reminder_time" class="block text-sm font-medium text-gray-700 mb-1">Time</label>
+                <label for="reminder_time" class="block text-sm font-medium text-gray-700 mb-1">Thời Gian</label>
                 <input type="time" id="reminder_time" name="reminder_time" required
                        class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500">
             </div>
@@ -208,15 +224,15 @@
                 <label class="flex items-center">
                     <input type="checkbox" name="is_recurring" value="1" checked
                            class="h-4 w-4 text-purple-600 focus:ring-purple-500 border-gray-300 rounded">
-                    <span class="ml-2 text-sm text-gray-700">Recurring</span>
+                    <span class="ml-2 text-sm text-gray-700">Lặp lại</span>
                 </label>
             </div>
             <div class="flex gap-2">
                 <button type="submit" class="flex-1 bg-purple-600 text-white px-4 py-2 rounded-lg hover:bg-purple-700 transition-colors">
-                    Create
+                    Tạo
                 </button>
                 <button type="button" id="close-modal" class="flex-1 bg-gray-200 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-300 transition-colors">
-                    Cancel
+                    Hủy
                 </button>
             </div>
         </form>
@@ -241,7 +257,7 @@ function initCharts() {
             data: {
                 labels: chartData.labels,
                     datasets: [{
-                    label: 'Weight (kg)',
+                    label: 'Cân Nặng (kg)',
                     data: chartData.weight,
                     borderColor: 'rgb(147, 51, 234)',
                     backgroundColor: 'rgba(147, 51, 234, 0.1)',
@@ -312,7 +328,7 @@ function initCharts() {
                 labels: chartData.labels,
                 datasets: [
                     {
-                        label: 'Sys',
+                        label: 'Tâm Thu',
                         data: chartData.blood_pressure.map(bp => bp ? bp.systolic : null),
                         borderColor: 'rgb(239, 68, 68)',
                         backgroundColor: 'rgba(239, 68, 68, 0.1)',
@@ -321,7 +337,7 @@ function initCharts() {
                         tension: 0.4
                     },
                     {
-                        label: 'Dia',
+                        label: 'Tâm Trương',
                         data: chartData.blood_pressure.map(bp => bp ? bp.diastolic : null),
                         borderColor: 'rgb(34, 197, 94)',
                         backgroundColor: 'rgba(34, 197, 94, 0.1)',
@@ -360,7 +376,7 @@ function initCharts() {
             data: {
                 labels: chartData.labels,
                 datasets: [{
-                    label: 'Blood Sugar',
+                    label: 'Đường Huyết',
                     data: chartData.blood_sugar,
                     borderColor: 'rgb(251, 146, 60)',
                     backgroundColor: 'rgba(251, 146, 60, 0.1)',
@@ -431,5 +447,53 @@ document.getElementById('chart-days')?.addEventListener('change', function() {
 
 // Initialize charts on load
 document.addEventListener('DOMContentLoaded', initCharts);
+
+// Delete consultation session from dashboard
+function deleteConsultationFromDashboard(sessionId, button) {
+    if (!confirm('Bạn có chắc chắn muốn xóa consultation session này? Hành động này không thể hoàn tác.')) {
+        return;
+    }
+
+    // Disable button during deletion
+    button.disabled = true;
+    button.innerHTML = '⏳';
+
+    fetch(`{{ route("ai-consultation.destroy", ":sessionId") }}`.replace(':sessionId', sessionId), {
+        method: 'DELETE',
+        headers: {
+            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '',
+            'Content-Type': 'application/json',
+            'Accept': 'application/json'
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            // Remove the consultation item from DOM
+            const item = button.closest('.group');
+            if (item) {
+                item.style.transition = 'opacity 0.3s';
+                item.style.opacity = '0';
+                setTimeout(() => {
+                    item.remove();
+                    // Reload page if no consultations left
+                    if (document.querySelectorAll('.delete-consultation-btn').length === 0) {
+                        location.reload();
+                    }
+                }, 300);
+            }
+        } else {
+            alert('Không thể xóa consultation session: ' + (data.message || 'Lỗi không xác định'));
+            button.disabled = false;
+            button.innerHTML = '🗑️';
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('Đã xảy ra lỗi khi xóa consultation session.');
+        button.disabled = false;
+        button.innerHTML = '🗑️';
+    });
+}
 </script>
 @endsection

@@ -4,12 +4,20 @@ namespace App\Services;
 
 use App\Models\HealthProfile;
 use App\Models\NutritionPlan;
+use App\Services\GeminiService;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 use Carbon\Carbon;
 
 class NutritionService
 {
+    protected $geminiService;
+
+    public function __construct(GeminiService $geminiService)
+    {
+        $this->geminiService = $geminiService;
+    }
+
     /**
      * Generate personalized nutrition plan
      */
@@ -40,38 +48,38 @@ class NutritionService
      */
     private function buildNutritionPrompt(HealthProfile $profile, array $preferences, int $durationDays, float $dailyCalories, $existingHealthPlans = null): string
     {
-        $prompt = "You are a professional nutritionist. Create a personalized {$durationDays}-day nutrition plan.\n\n";
+        $prompt = "Bạn là một chuyên gia dinh dưỡng chuyên nghiệp. Tạo một kế hoạch dinh dưỡng cá nhân hóa {$durationDays} ngày.\n\n";
         
-        $prompt .= "USER PROFILE:\n";
-        if ($profile->age) $prompt .= "- Age: {$profile->age}\n";
-        if ($profile->gender) $prompt .= "- Gender: {$profile->gender}\n";
+        $prompt .= "HỒ SƠ NGƯỜI DÙNG:\n";
+        if ($profile->age) $prompt .= "- Tuổi: {$profile->age}\n";
+        if ($profile->gender) $prompt .= "- Giới tính: {$profile->gender}\n";
         if ($profile->bmi) $prompt .= "- BMI: {$profile->bmi}\n";
         if ($profile->height && $profile->weight) {
-            $prompt .= "- Height: {$profile->height} cm, Weight: {$profile->weight} kg\n";
+            $prompt .= "- Chiều cao: {$profile->height} cm, Cân nặng: {$profile->weight} kg\n";
         }
         
-        $prompt .= "- Daily Calorie Target: " . round($dailyCalories) . " kcal\n";
+        $prompt .= "- Mục tiêu calo hàng ngày: " . round($dailyCalories) . " kcal\n";
         
         if ($profile->health_goals) {
             $goals = is_array($profile->health_goals) ? implode(', ', $profile->health_goals) : $profile->health_goals;
-            $prompt .= "- Health Goals: {$goals}\n";
+            $prompt .= "- Mục tiêu sức khỏe: {$goals}\n";
         }
         
         if ($profile->allergies) {
-            $prompt .= "- Allergies: {$profile->allergies}\n";
+            $prompt .= "- Dị ứng: {$profile->allergies}\n";
         }
         
         if ($profile->medical_history) {
-            $prompt .= "- Medical History: {$profile->medical_history}\n";
+            $prompt .= "- Tiền sử bệnh: {$profile->medical_history}\n";
         }
         
         if ($profile->lifestyle_habits) {
             $habits = is_array($profile->lifestyle_habits) ? json_encode($profile->lifestyle_habits) : $profile->lifestyle_habits;
-            $prompt .= "- Lifestyle Habits: {$habits}\n";
+            $prompt .= "- Thói quen lối sống: {$habits}\n";
         }
         
         if (!empty($preferences)) {
-            $prompt .= "\nDIETARY PREFERENCES:\n";
+            $prompt .= "\nSỞ THÍCH ĂN UỐNG:\n";
             foreach ($preferences as $key => $value) {
                 $prompt .= "- " . ucfirst($key) . ": {$value}\n";
             }
@@ -79,7 +87,7 @@ class NutritionService
         
         // Add reference from existing health plans if available
         if ($existingHealthPlans && count($existingHealthPlans) > 0) {
-            $prompt .= "\nREFERENCE FROM PREVIOUS HEALTH PLANS:\n";
+            $prompt .= "\nTHAM KHẢO TỪ KẾ HOẠCH SỨC KHỎE TRƯỚC ĐÓ:\n";
             $latestPlan = $existingHealthPlans[0];
             if (isset($latestPlan->plan_data['daily_plans'])) {
                 $sampleMeals = [];
@@ -91,26 +99,54 @@ class NutritionService
                     }
                 }
                 if (!empty($sampleMeals)) {
-                    $prompt .= "User has previously eaten: " . implode(', ', array_slice($sampleMeals, 0, 5)) . "...\n";
-                    $prompt .= "You can reference and create variations from these meals.\n";
+                    $prompt .= "Người dùng đã từng ăn: " . implode(', ', array_slice($sampleMeals, 0, 5)) . "...\n";
+                    $prompt .= "Bạn có thể tham khảo và tạo các biến thể từ những bữa ăn này.\n";
                 }
             }
         }
         
-        $prompt .= "\nREQUIREMENTS:\n";
-        $prompt .= "1. Create EXACTLY {$durationDays} days, each day DIFFERENT (breakfast, lunch, dinner, snack)\n";
-        $prompt .= "2. SHORT meal names (e.g., 'Grilled chicken w/ veggies'), portion, calories, protein, carbs, fats\n";
-        $prompt .= "3. Total calories per day ~" . round($dailyCalories) . " kcal\n";
-        $prompt .= "4. Shopping list & tips VERY SHORT (5-7 items)\n";
-        $prompt .= "5. Write ALL content in ENGLISH, CONCISE, NO verbose text\n\n";
+        $prompt .= "\nYÊU CẦU:\n";
+        $prompt .= "1. Tạo CHÍNH XÁC {$durationDays} ngày, mỗi ngày KHÁC NHAU (bữa sáng, bữa trưa, bữa tối, đồ ăn nhẹ)\n";
+        $prompt .= "2. MỖI BỮA ĂN phải có 2-3 LỰA CHỌN với calories chi tiết\n";
+        $prompt .= "3. Tên món ăn NGẮN GỌN (ví dụ: 'Gà nướng với rau'), calories, protein, carbs, fat\n";
+        $prompt .= "4. Tổng calo mỗi ngày ~" . round($dailyCalories) . " kcal\n";
+        $prompt .= "5. Danh sách mua sắm & mẹo RẤT NGẮN (5-7 mục)\n";
+        $prompt .= "6. Viết TẤT CẢ nội dung bằng TIẾNG VIỆT, NGẮN GỌN, KHÔNG dài dòng\n\n";
         
-        $prompt .= "JSON format (CONCISE):\n";
+        $prompt .= "Định dạng JSON (NGẮN GỌN):\n";
         $prompt .= '{
   "daily_meals": [
-    {"day": 1, "meals": [{"time": "Breakfast", "food": "Oatmeal banana", "portion": "250g", "calories": 300, "protein": 10, "carbs": 45, "fats": 8}, {"time": "Lunch", ...}, {"time": "Dinner", ...}, {"time": "Snack", ...}], "nutrition": {"total_calories": 1300}, "shopping_list": ["Oatmeal", "Banana", "Chicken"]},
+    {
+      "day": 1, 
+      "meals": [
+        {
+          "time": "Bữa sáng",
+          "options": [
+            {"food": "Cháo yến mạch chuối", "calories": 300, "protein": 10, "carbs": 45, "fat": 8},
+            {"food": "Bánh mì trứng", "calories": 320, "protein": 12, "carbs": 42, "fat": 10}
+          ]
+        },
+        {
+          "time": "Bữa trưa",
+          "options": [
+            {"food": "Cơm gà nướng rau", "calories": 500, "protein": 30, "carbs": 60, "fat": 12},
+            {"food": "Phở bò", "calories": 480, "protein": 28, "carbs": 58, "fat": 11}
+          ]
+        },
+        {
+          "time": "Bữa tối",
+          "options": [
+            {"food": "Cá hấp rau củ", "calories": 400, "protein": 25, "carbs": 50, "fat": 10},
+            {"food": "Canh chua cá", "calories": 380, "protein": 23, "carbs": 48, "fat": 9}
+          ]
+        }
+      ], 
+      "nutrition": {"total_calories": 1300, "protein": 65, "carbs": 155, "fat": 30}, 
+      "shopping_list": ["Yến mạch", "Chuối", "Gà", "Rau"]
+    },
     {"day": 2, "meals": [...], ...}
   ],
-  "tips": ["Meal prep ahead", "Drink water"]
+  "tips": ["Chuẩn bị bữa ăn trước", "Uống nước"]
 }';
         
         return $prompt;
@@ -121,50 +157,26 @@ class NutritionService
      */
     private function getAIResponse(string $prompt): string
     {
-        $apiKey = env('OPENAI_API_KEY');
-        
-        if (!$apiKey) {
-            throw new \RuntimeException('OPENAI_API_KEY chưa được cấu hình trong file .env.');
-        }
-
         try {
-            set_time_limit(180); // 3 phút cho PHP script
+            $systemInstruction = 'Bạn là một chuyên gia dinh dưỡng chuyên nghiệp. Tạo các kế hoạch bữa ăn CỰC KỲ NGẮN GỌN. MỖI NGÀY KHÁC NHAU. Trả về JSON hợp lệ, KHÔNG giải thích. Viết TẤT CẢ nội dung bằng TIẾNG VIỆT.';
             
-            $response = Http::timeout(150) // 2.5 phút cho HTTP request
-                ->withOptions(['verify' => false])
-                ->withHeaders([
-                    'Authorization' => 'Bearer ' . $apiKey,
-                    'Content-Type' => 'application/json',
-                ])->post('https://api.openai.com/v1/chat/completions', [
-                    'model' => 'gpt-4o-mini',
-                    'messages' => [
-                        [
-                            'role' => 'system',
-                            'content' => 'You are a professional nutritionist. Create EXTREMELY CONCISE meal plans. EACH DAY DIFFERENT. Return valid JSON, NO explanation. Write ALL content in ENGLISH.'
-                        ],
-                        [
-                            'role' => 'user',
-                            'content' => $prompt
-                        ]
-                    ],
+            $content = $this->geminiService->generateJsonContent(
+                $prompt,
+                $systemInstruction,
+                [],
+                [
                     'temperature' => 0.6,
-                    'max_tokens' => 6000, // Giảm xuống để nhanh hơn nhưng vẫn đủ 14 ngày
-                    'response_format' => ['type' => 'json_object'],
-                ]);
-
-            if ($response->successful()) {
-                $content = $response->json()['choices'][0]['message']['content'] ?? null;
-                if (!$content) {
-                    throw new \RuntimeException('OpenAI trả về phản hồi trống');
-                }
-                Log::info('OpenAI Nutrition API successful');
-                return $content;
-            } else {
-                $error = $response->json()['error']['message'] ?? 'Unknown API error';
-                throw new \RuntimeException('Lỗi OpenAI API: ' . $error);
-            }
+                    'max_tokens' => 16384, // Increase for full plan with multiple options per meal
+                    'timeout' => 180,
+                    'http_timeout' => 150,
+                    'model' => 'gemini-2.5-flash'
+                ]
+            );
+            
+            Log::info('Gemini Nutrition API successful');
+            return $content;
         } catch (\Exception $e) {
-            Log::error('OpenAI Nutrition API Error: ' . $e->getMessage());
+            Log::error('Gemini Nutrition API Error: ' . $e->getMessage());
             throw new \RuntimeException('Không thể tạo kế hoạch dinh dưỡng từ AI: ' . $e->getMessage());
         }
     }
@@ -244,39 +256,111 @@ class NutritionService
      */
     private function parseNutritionPlan(string $aiResponse, int $durationDays): array
     {
-        Log::info('Raw AI Nutrition Response', ['response' => substr($aiResponse, 0, 500)]);
+        Log::info('Raw AI Nutrition Response', ['response_length' => strlen($aiResponse), 'preview' => substr($aiResponse, 0, 500)]);
         
         // Bỏ markdown code fence
         $aiResponse = preg_replace('/```json\s*/s', '', $aiResponse);
         $aiResponse = preg_replace('/```\s*$/s', '', $aiResponse);
         $aiResponse = trim($aiResponse);
         
+        // Remove control characters that might cause JSON parsing errors
+        // Keep only printable characters and whitespace
+        $aiResponse = preg_replace('/[\x00-\x1F\x7F]/u', '', $aiResponse);
+        
+        // Try to fix incomplete JSON (if truncated)
         $decoded = json_decode($aiResponse, true);
         
         if (!$decoded) {
+            // Try to extract JSON from response (find the first { and last })
             preg_match('/\{.*\}/s', $aiResponse, $matches);
             if (!empty($matches[0])) {
                 $decoded = json_decode($matches[0], true);
             }
         }
         
+        // If still invalid, try to fix incomplete JSON by adding closing brackets
+        if (!$decoded && substr($aiResponse, -1) !== '}') {
+            // Find the last complete object/array position
+            $lastCompletePos = strrpos($aiResponse, '}');
+            if ($lastCompletePos === false) {
+                $lastCompletePos = strrpos($aiResponse, ']');
+            }
+            
+            if ($lastCompletePos !== false) {
+                // Try to extract up to last complete position and add closing brackets
+                $partialResponse = substr($aiResponse, 0, $lastCompletePos + 1);
+                
+                // Count open/close brackets
+                $openBraces = substr_count($partialResponse, '{');
+                $closeBraces = substr_count($partialResponse, '}');
+                $openBrackets = substr_count($partialResponse, '[');
+                $closeBrackets = substr_count($partialResponse, ']');
+                
+                // Try to complete the JSON
+                $fixedResponse = $partialResponse;
+                while ($openBrackets > $closeBrackets) {
+                    $fixedResponse .= ']';
+                    $closeBrackets++;
+                }
+                while ($openBraces > $closeBraces) {
+                    $fixedResponse .= '}';
+                    $closeBraces++;
+                }
+                
+                $decoded = json_decode($fixedResponse, true);
+                if ($decoded) {
+                    Log::warning('Fixed incomplete JSON response', [
+                        'original_length' => strlen($aiResponse),
+                        'fixed_length' => strlen($fixedResponse),
+                        'days_recovered' => isset($decoded['daily_meals']) ? count($decoded['daily_meals']) : 0
+                    ]);
+                }
+            }
+        }
+        
         if (!$decoded || !isset($decoded['daily_meals']) || !is_array($decoded['daily_meals'])) {
             Log::error('AI nutrition response is invalid', [
-                'ai_response' => $aiResponse,
+                'ai_response_length' => strlen($aiResponse),
+                'ai_response_preview' => substr($aiResponse, 0, 1000),
                 'decoded' => $decoded,
+                'json_error' => json_last_error_msg(),
             ]);
             throw new \RuntimeException('Dữ liệu AI dinh dưỡng không hợp lệ. Vui lòng thử lại.');
         }
 
+        // Validate number of days
+        $receivedDays = count($decoded['daily_meals']);
+        if ($receivedDays < $durationDays) {
+            Log::warning('AI returned fewer days than requested', [
+                'requested' => $durationDays,
+                'received' => $receivedDays
+            ]);
+            // Continue with what we have, but log warning
+        }
+
         // Kiểm tra từng ngày
-        foreach ($decoded['daily_meals'] as $dayMeal) {
+        foreach ($decoded['daily_meals'] as $index => $dayMeal) {
             if (!isset($dayMeal['meals']) || !is_array($dayMeal['meals'])) {
-                Log::error('Day meal missing required fields', ['day_meal' => $dayMeal]);
+                Log::error('Day meal missing required fields', ['day_index' => $index, 'day_meal' => $dayMeal]);
                 throw new \RuntimeException('Kế hoạch dinh dưỡng thiếu thông tin bắt buộc.');
+            }
+            
+            // Validate meals structure (should have options or food field)
+            foreach ($dayMeal['meals'] as $mealIndex => $meal) {
+                if (!isset($meal['time'])) {
+                    Log::warning('Meal missing time field', ['day_index' => $index, 'meal_index' => $mealIndex]);
+                }
+                // Support both formats: with options or single food
+                if (!isset($meal['options']) && !isset($meal['food'])) {
+                    Log::warning('Meal missing both options and food', ['day_index' => $index, 'meal_index' => $mealIndex]);
+                }
             }
         }
 
-        Log::info('AI nutrition plan parsed successfully', ['days_count' => count($decoded['daily_meals'])]);
+        Log::info('AI nutrition plan parsed successfully', [
+            'days_count' => count($decoded['daily_meals']),
+            'requested_days' => $durationDays
+        ]);
         
         return $decoded;
     }
