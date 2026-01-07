@@ -6,6 +6,7 @@ use App\Models\MedicalContent;
 use App\Models\Bookmark;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Cache;
 
 class MedicalContentController extends Controller
 {
@@ -49,48 +50,58 @@ class MedicalContentController extends Controller
             });
         }
 
-        // Get content
-        $knowledgeBase = MedicalContent::where('content_type', 'knowledge_base')
-            ->where('status', 'published')
-            ->orderBy('created_at', 'desc')
-            ->limit(6)
-            ->get();
+        // Get content with cache (5 minutes)
+        $knowledgeBase = Cache::remember('medical_content_kb_featured', 300, function () {
+            return MedicalContent::where('content_type', 'knowledge_base')
+                ->where('status', 'published')
+                ->orderBy('created_at', 'desc')
+                ->limit(6)
+                ->get();
+        });
 
-        $faqs = MedicalContent::where('content_type', 'faq')
-            ->where('status', 'published')
-            ->orderBy('created_at', 'desc')
-            ->limit(6)
-            ->get();
+        $faqs = Cache::remember('medical_content_faq_featured', 300, function () {
+            return MedicalContent::where('content_type', 'faq')
+                ->where('status', 'published')
+                ->orderBy('created_at', 'desc')
+                ->limit(6)
+                ->get();
+        });
 
-        $templates = MedicalContent::where('content_type', 'template')
-            ->where('status', 'published')
-            ->orderBy('created_at', 'desc')
-            ->limit(6)
-            ->get();
+        $templates = Cache::remember('medical_content_template_featured', 300, function () {
+            return MedicalContent::where('content_type', 'template')
+                ->where('status', 'published')
+                ->orderBy('created_at', 'desc')
+                ->limit(6)
+                ->get();
+        });
 
         // Get filtered results
         $results = $query->orderBy('created_at', 'desc')->paginate(12);
 
-        // Get categories for filter
-        $categories = MedicalContent::where('status', 'published')
-            ->whereNotNull('category')
-            ->distinct()
-            ->pluck('category')
-            ->filter()
-            ->values();
+        // Get categories for filter with cache (10 minutes)
+        $categories = Cache::remember('medical_content_categories', 600, function () {
+            return MedicalContent::where('status', 'published')
+                ->whereNotNull('category')
+                ->distinct()
+                ->pluck('category')
+                ->filter()
+                ->values();
+        });
 
-        // Stats
-        $stats = [
-            'knowledge_base_count' => MedicalContent::where('content_type', 'knowledge_base')
-                ->where('status', 'published')
-                ->count(),
-            'faqs_count' => MedicalContent::where('content_type', 'faq')
-                ->where('status', 'published')
-                ->count(),
-            'templates_count' => MedicalContent::where('content_type', 'template')
-                ->where('status', 'published')
-                ->count(),
-        ];
+        // Stats with cache (10 minutes)
+        $stats = Cache::remember('medical_content_stats', 600, function () {
+            return [
+                'knowledge_base_count' => MedicalContent::where('content_type', 'knowledge_base')
+                    ->where('status', 'published')
+                    ->count(),
+                'faqs_count' => MedicalContent::where('content_type', 'faq')
+                    ->where('status', 'published')
+                    ->count(),
+                'templates_count' => MedicalContent::where('content_type', 'template')
+                    ->where('status', 'published')
+                    ->count(),
+            ];
+        });
 
         // Get user's bookmarks if logged in
         $bookmarks = collect();
@@ -233,13 +244,16 @@ class MedicalContentController extends Controller
 
         $articles = $query->paginate(12);
 
-        $categories = MedicalContent::where('content_type', 'knowledge_base')
-            ->where('status', 'published')
-            ->whereNotNull('category')
-            ->distinct()
-            ->pluck('category')
-            ->filter()
-            ->values();
+        // Cache categories for 10 minutes
+        $categories = Cache::remember('medical_content_kb_categories', 600, function () {
+            return MedicalContent::where('content_type', 'knowledge_base')
+                ->where('status', 'published')
+                ->whereNotNull('category')
+                ->distinct()
+                ->pluck('category')
+                ->filter()
+                ->values();
+        });
 
         return view('medical-content.knowledge-base.index', compact('articles', 'categories', 'category', 'tag', 'search', 'sort'));
     }

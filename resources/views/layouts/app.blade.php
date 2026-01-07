@@ -6,7 +6,7 @@
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>AI HealthBot - Tư Vấn Sức Khỏe Cá Nhân Hóa</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js" defer></script>
     <script>
         tailwind.config = {
             theme: {
@@ -680,29 +680,15 @@
             // Load unread count on page load
             loadUnreadCount();
 
-            // Auto-load notifications after page load (to have data ready when menu opens)
-            $(document).ready(function() {
-                // Load notifications after a short delay to ensure page is fully loaded
-                setTimeout(function() {
-                    loadUnreadCount();
-                    // Pre-load notifications so they're ready when user opens menu
-                    loadNotifications();
-                }, 500);
-                
-                // If notification menu is already visible, refresh it
-                if (!notificationMenu.hasClass('opacity-0')) {
-                    loadNotifications();
-                }
-            });
+            // Load unread count only once on page load
+            loadUnreadCount();
 
-            // Smart polling for real-time notifications
+            // Smart polling for real-time notifications - OPTIMIZED
             let lastUnreadCount = 0;
-            let fastPollingInterval = null;
-            let normalPollingInterval = null;
+            let pollingInterval = null;
             
             function startPolling() {
-                // Fast polling (2 seconds) when there are unread notifications
-                // Normal polling (10 seconds) when no unread notifications
+                // Slower polling (30 seconds) to reduce server load
                 function checkAndPoll() {
                     $.ajax({
                         url: '{{ route("notifications.unread-count") }}',
@@ -713,44 +699,14 @@
                         success: function(response) {
                             const currentCount = response.count;
                             
-                            // Check if count changed before updating
-                            const countChanged = currentCount !== lastUnreadCount;
-                            const newNotificationArrived = currentCount > lastUnreadCount;
-                            
-                            // Update badge
-                            updateNotificationBadge(currentCount);
-                            
-                            // If count changed, refresh notifications
-                            if (countChanged) {
-                                // Refresh notifications if menu is open
+                            // Only update if count changed
+                            if (currentCount !== lastUnreadCount) {
+                                updateNotificationBadge(currentCount);
+                                lastUnreadCount = currentCount;
+                                
+                                // Only refresh notifications if menu is open
                                 if (!notificationMenu.hasClass('opacity-0')) {
                                     loadNotifications();
-                                }
-                                
-                                // If new notification arrived, trigger immediate refresh
-                                if (newNotificationArrived) {
-                                    // Badge will pulse/animate automatically via CSS
-                                    // Also refresh notifications immediately
-                                    loadNotifications();
-                                }
-                                
-                                lastUnreadCount = currentCount;
-                            }
-                            
-                            // Adjust polling speed based on unread count
-                            if (currentCount > 0) {
-                                // Fast polling when there are unread notifications
-                                if (!fastPollingInterval) {
-                                    clearInterval(normalPollingInterval);
-                                    normalPollingInterval = null;
-                                    fastPollingInterval = setInterval(checkAndPoll, 2000); // 2 seconds
-                                }
-                            } else {
-                                // Normal polling when no unread notifications
-                                if (!normalPollingInterval) {
-                                    clearInterval(fastPollingInterval);
-                                    fastPollingInterval = null;
-                                    normalPollingInterval = setInterval(checkAndPoll, 10000); // 10 seconds
                                 }
                             }
                         },
@@ -760,25 +716,19 @@
                     });
                 }
                 
-                // Start with normal polling
-                normalPollingInterval = setInterval(checkAndPoll, 10000);
-                // Also check immediately
+                // Poll every 30 seconds (reduced from 2-10 seconds)
+                pollingInterval = setInterval(checkAndPoll, 30000);
                 checkAndPoll();
             }
             
-            // Start smart polling
+            // Start polling
             startPolling();
-            
-            // Auto-refresh notifications if menu is open (every 5 seconds)
-            setInterval(function() {
-                if (!notificationMenu.hasClass('opacity-0')) {
-                    loadNotifications();
-                }
-            }, 5000);
             @endauth
         });
     </script>
 
-    <script src="{{ asset('assets/js/mobile-menu.js') }}"></script>
+    @if(file_exists(public_path('assets/js/mobile-menu.js')))
+    <script src="{{ asset('assets/js/mobile-menu.js') }}" defer></script>
+    @endif
 </body>
 </html>

@@ -74,11 +74,15 @@ class User extends Authenticatable
     }
 
     /**
-     * Get unread notifications count.
+     * Get unread notifications count with caching.
      */
     public function unreadNotificationsCount(): int
     {
-        return $this->notifications()->unread()->count();
+        return \Cache::remember(
+            "user.{$this->id}.unread_notifications_count",
+            60, // Cache for 1 minute
+            fn() => $this->notifications()->unread()->count()
+        );
     }
 
     /**
@@ -112,14 +116,7 @@ class User extends Authenticatable
         
         // Legacy: Check if avatar path starts with 'avatars/' - could be R2 or local
         if (str_starts_with($this->avatar, 'avatars/')) {
-            // Check if file exists in local storage first (more reliable check)
-            if (Storage::disk('public')->exists($this->avatar)) {
-                // File is in local storage
-                return asset('storage/' . $this->avatar);
-            }
-            
-            // If not in local storage, assume it's in R2
-            // (exists() check with R2 may not work reliably, so we assume R2 if not local)
+            // Assume R2 first (faster, no disk check)
             return rtrim($r2PublicUrl, '/') . '/' . $this->avatar;
         }
 
