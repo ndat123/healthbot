@@ -11,6 +11,7 @@ use App\Http\Controllers\NutritionController;
 use App\Http\Controllers\HealthTrackingController;
 use App\Http\Controllers\HealthJournalController;
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\DoctorController;
 
 // Public routes
 Route::get('/', [HomeController::class, 'index'])->name('home');
@@ -38,6 +39,12 @@ Route::middleware('auth')->group(function () {
     Route::get('/health-plans/{id}', [HealthPlanController::class, 'show'])->name('health-plans.show');
     Route::post('/health-plans/{id}/progress', [HealthPlanController::class, 'updateProgress'])->name('health-plans.progress');
     Route::post('/health-plans/{id}/status', [HealthPlanController::class, 'updateStatus'])->name('health-plans.status');
+    Route::post('/health-plans/{id}/meal-completion', [HealthPlanController::class, 'updateMealCompletion'])->name('health-plans.meal-completion');
+    Route::post('/health-plans/{id}/meal-selection', [HealthPlanController::class, 'saveMealSelection'])->name('health-plans.meal-selection');
+    Route::post('/health-plans/{id}/complete-all', [HealthPlanController::class, 'completeAllActivities'])->name('health-plans.complete-all');
+    Route::post('/health-plans/{id}/adjust-plan', [HealthPlanController::class, 'adjustPlan'])->name('health-plans.adjust-plan');
+    Route::delete('/health-plans/{id}', [HealthPlanController::class, 'destroy'])->name('health-plans.destroy');
+    Route::post('/health-plans/{id}/week-completion-advice', [HealthPlanController::class, 'getWeekCompletionAdvice'])->name('health-plans.week-completion-advice');
     
     // AI Consultation routes
     Route::get('/ai-consultation', [AIConsultationController::class, 'index'])->name('ai-consultation.index');
@@ -45,11 +52,16 @@ Route::middleware('auth')->group(function () {
     Route::post('/ai-consultation/send', [AIConsultationController::class, 'sendMessage'])->name('ai-consultation.send');
     Route::get('/ai-consultation/history/{sessionId}', [AIConsultationController::class, 'getHistory'])->name('ai-consultation.history');
     Route::get('/ai-consultation/stats', [AIConsultationController::class, 'getStats'])->name('ai-consultation.stats');
+    Route::delete('/ai-consultation/{sessionId}', [AIConsultationController::class, 'destroy'])->name('ai-consultation.destroy');
     
     // Nutrition routes
     Route::get('/nutrition', [NutritionController::class, 'index'])->name('nutrition.index');
     Route::post('/nutrition/generate', [NutritionController::class, 'generatePlan'])->name('nutrition.generate');
     Route::get('/nutrition/{id}', [NutritionController::class, 'show'])->name('nutrition.show');
+    Route::post('/nutrition/{id}/adjust-plan', [NutritionController::class, 'adjustPlan'])->name('nutrition.adjust-plan');
+    Route::post('/nutrition/{id}/meal-completion', [NutritionController::class, 'updateMealCompletion'])->name('nutrition.meal-completion');
+    Route::post('/nutrition/{id}/meal-selection', [NutritionController::class, 'saveMealSelection'])->name('nutrition.meal-selection');
+    Route::delete('/nutrition/{id}', [NutritionController::class, 'destroy'])->name('nutrition.destroy');
     
     // Health Tracking routes
     Route::get('/health-tracking', [HealthTrackingController::class, 'index'])->name('health-tracking.index');
@@ -63,12 +75,45 @@ Route::middleware('auth')->group(function () {
     Route::get('/health-journal', [HealthJournalController::class, 'index'])->name('health-journal.index');
     Route::post('/health-journal', [HealthJournalController::class, 'store'])->name('health-journal.store');
     Route::get('/health-journal/{id}', [HealthJournalController::class, 'show'])->name('health-journal.show');
+    Route::delete('/health-journal/{id}', [HealthJournalController::class, 'destroy'])->name('health-journal.destroy');
+    
+    // Doctor routes
+    Route::get('/doctor', [DoctorController::class, 'index'])->name('doctor.index');
+    Route::get('/doctor/{id}', [DoctorController::class, 'show'])->name('doctor.show');
+    Route::post('/doctor/booking', [DoctorController::class, 'store'])->name('doctor.booking.store');
+    Route::get('/doctor/appointment/{id}', [DoctorController::class, 'showAppointment'])->name('doctor.appointment.show');
+    Route::get('/doctor/{id}/chat', [DoctorController::class, 'chat'])->name('doctor.chat');
+    Route::post('/doctor/{id}/chat/send', [DoctorController::class, 'sendMessage'])->name('doctor.chat.send');
+    Route::get('/doctor/{id}/chat/messages', [DoctorController::class, 'getMessages'])->name('doctor.chat.messages');
     
     // Profile routes
     Route::get('/profile', [ProfileController::class, 'index'])->name('profile.index');
     Route::put('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::put('/profile/password', [ProfileController::class, 'updatePassword'])->name('profile.password.update');
     Route::put('/profile/settings', [ProfileController::class, 'updateSettings'])->name('profile.settings.update');
+    
+    // Reminder routes
+    Route::get('/reminders', [\App\Http\Controllers\ReminderController::class, 'index'])->name('reminders.index');
+    Route::post('/reminders', [\App\Http\Controllers\ReminderController::class, 'store'])->name('reminders.store');
+    Route::put('/reminders/{reminder}/deactivate', [\App\Http\Controllers\ReminderController::class, 'deactivate'])->name('reminders.deactivate');
+    
+    // Notification routes
+    Route::get('/notifications', [\App\Http\Controllers\NotificationController::class, 'index'])->name('notifications.index');
+    Route::get('/notifications/unread-count', [\App\Http\Controllers\NotificationController::class, 'unreadCount'])->name('notifications.unread-count');
+    Route::post('/notifications/{notification}/read', [\App\Http\Controllers\NotificationController::class, 'markAsRead'])->name('notifications.mark-read');
+    Route::post('/notifications/read-all', [\App\Http\Controllers\NotificationController::class, 'markAllAsRead'])->name('notifications.mark-all-read');
+    Route::delete('/notifications/{notification}', [\App\Http\Controllers\NotificationController::class, 'destroy'])->name('notifications.destroy');
+    Route::delete('/notifications', [\App\Http\Controllers\NotificationController::class, 'destroyAll'])->name('notifications.destroy-all');
+    
+    // Medical Content routes (for users - read only)
+    Route::get('/medical-content', [\App\Http\Controllers\MedicalContentController::class, 'index'])->name('medical-content.index');
+    Route::get('/medical-content/knowledge-base', [\App\Http\Controllers\MedicalContentController::class, 'knowledgeBase'])->name('medical-content.knowledge-base');
+    Route::get('/medical-content/knowledge-base/{id}', [\App\Http\Controllers\MedicalContentController::class, 'showKnowledgeBase'])->name('medical-content.knowledge-base.show');
+    Route::get('/medical-content/faqs', [\App\Http\Controllers\MedicalContentController::class, 'faqs'])->name('medical-content.faqs');
+    Route::get('/medical-content/faq/{id}', [\App\Http\Controllers\MedicalContentController::class, 'showFAQ'])->name('medical-content.faq.show');
+    Route::post('/medical-content/{id}/helpful', [\App\Http\Controllers\MedicalContentController::class, 'markHelpful'])->name('medical-content.helpful');
+    Route::post('/medical-content/{id}/bookmark', [\App\Http\Controllers\MedicalContentController::class, 'toggleBookmark'])->name('medical-content.bookmark');
+    Route::get('/medical-content/bookmarks', [\App\Http\Controllers\MedicalContentController::class, 'myBookmarks'])->name('medical-content.bookmarks');
 });
 
 // Admin authentication routes
@@ -114,6 +159,12 @@ Route::delete('/admin/ai-management/scenarios/{id}', [AdminController::class, 'd
 Route::get('/admin/ai-management/metrics', [AdminController::class, 'viewMetrics'])->name('admin.ai-management.metrics');
 Route::get('/admin/ai-management/feedback', [AdminController::class, 'reviewFeedback'])->name('admin.ai-management.feedback');
 Route::get('/admin/analytics', [AdminController::class, 'analytics'])->name('admin.analytics');
+Route::delete('/admin/health-plans/{id}', [AdminController::class, 'deleteHealthPlan'])->name('admin.health-plans.delete');
+Route::delete('/admin/nutrition/{id}', [AdminController::class, 'deleteNutritionPlan'])->name('admin.nutrition.delete');
+Route::post('/admin/reports/generate', [AdminController::class, 'generateReport'])->name('admin.reports.generate');
+Route::get('/admin/reports/{report}/download', [AdminController::class, 'downloadReport'])->name('admin.reports.download');
+Route::get('/admin/reports/{report}/view', [AdminController::class, 'viewReport'])->name('admin.reports.view');
+Route::get('/admin/reports/download-all', [AdminController::class, 'downloadAllReports'])->name('admin.reports.download-all');
 Route::get('/admin/security', [AdminController::class, 'security'])->name('admin.security');
 Route::get('/admin/system', [AdminController::class, 'system'])->name('admin.system');
 Route::post('/admin/system/restart-api', [AdminController::class, 'restartApi'])->name('admin.system.restart-api');

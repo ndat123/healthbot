@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Models\HealthJournal;
 use App\Models\HealthProfile;
+use App\Services\GeminiService;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
@@ -11,6 +12,13 @@ use Carbon\Carbon;
 
 class HealthJournalService
 {
+    protected $geminiService;
+
+    public function __construct(GeminiService $geminiService)
+    {
+        $this->geminiService = $geminiService;
+    }
+
     /**
      * Analyze journal entry and generate suggestions/warnings
      */
@@ -340,53 +348,32 @@ class HealthJournalService
      */
     private function getAIAnalysis(HealthJournal $journal, ?HealthProfile $profile): ?array
     {
-        $apiKey = env('OPENAI_API_KEY');
-        if (!$apiKey) {
-            // If no API key, return null and rely on rule-based analysis
-            Log::info('Skipping AI analysis - no API key configured');
-            return null;
-        }
-
         try {
-            set_time_limit(60);
-            
             $prompt = $this->buildAnalysisPrompt($journal, $profile);
             
-            $response = Http::timeout(40)
-                ->withOptions(['verify' => false])
-                ->withHeaders([
-                    'Authorization' => 'Bearer ' . $apiKey,
-                    'Content-Type' => 'application/json',
-                ])->post('https://api.openai.com/v1/chat/completions', [
-                    'model' => 'gpt-4o-mini',
-                    'messages' => [
-                        [
-                            'role' => 'system',
-                            'content' => 'You are a professional health analysis AI. Analyze health journal entries and provide helpful, actionable suggestions and warnings in ENGLISH. ALWAYS prioritize safety and recommend professional medical consultation when appropriate. Respond in JSON format only.'
-                        ],
-                        [
-                            'role' => 'user',
-                            'content' => $prompt
-                        ]
-                    ],
+            $systemInstruction = 'Bạn là một AI phân tích sức khỏe chuyên nghiệp. QUAN TRỌNG: TẤT CẢ phản hồi PHẢI bằng TIẾNG VIỆT. KHÔNG được sử dụng tiếng Anh. Phân tích các mục nhật ký sức khỏe và cung cấp các gợi ý và cảnh báo hữu ích, có thể thực hiện được bằng TIẾNG VIỆT. LUÔN ưu tiên an toàn và khuyên nên tư vấn y tế chuyên nghiệp khi phù hợp. Chỉ phản hồi ở định dạng JSON. Tất cả nội dung trong suggestions, warnings, doctor_reason PHẢI là tiếng Việt.';
+            
+            $content = $this->geminiService->generateJsonContent(
+                $prompt,
+                $systemInstruction,
+                [],
+                [
                     'temperature' => 0.6,
                     'max_tokens' => 800,
-                    'response_format' => ['type' => 'json_object'],
-                ]);
-
-            if ($response->successful()) {
-                $content = $response->json()['choices'][0]['message']['content'] ?? null;
-                if ($content) {
-                    Log::info('AI Journal Analysis successful');
-                    return $this->parseAIResponse($content);
-                }
-            } else {
-                $error = $response->json()['error']['message'] ?? 'Unknown error';
-                Log::error('OpenAI API Error in HealthJournal: ' . $error);
+                    'timeout' => 60,
+                    'http_timeout' => 40,
+                    'model' => 'gemini-2.5-flash'
+                ]
+            );
+            
+            if ($content) {
+                Log::info('AI Journal Analysis successful');
+                return $this->parseAIResponse($content);
             }
         } catch (\Exception $e) {
             Log::error('Exception in HealthJournal AI analysis: ' . $e->getMessage());
-            throw $e; // Re-throw to be caught by caller
+            // Return null to fall back to rule-based analysis
+            return null;
         }
 
         return null;
@@ -397,55 +384,55 @@ class HealthJournalService
      */
     private function buildAnalysisPrompt(HealthJournal $journal, ?HealthProfile $profile): string
     {
-        $prompt = "Analyze this health journal entry from " . $journal->journal_date->format('Y-m-d') . " and provide comprehensive health insights:\n\n";
+        $prompt = "Phân tích mục nhật ký sức khỏe này từ ngày " . $journal->journal_date->format('d/m/Y') . " và cung cấp những hiểu biết toàn diện về sức khỏe:\n\n";
         
-        $prompt .= "JOURNAL ENTRY:\n";
+        $prompt .= "MỤC NHẬT KÝ:\n";
         if ($journal->symptoms) {
-            $prompt .= "Symptoms: {$journal->symptoms}\n";
+            $prompt .= "Triệu chứng: {$journal->symptoms}\n";
         }
         if ($journal->food_diary) {
-            $prompt .= "Food Diary: {$journal->food_diary}\n";
+            $prompt .= "Nhật ký ăn uống: {$journal->food_diary}\n";
         }
         if ($journal->exercise_log) {
-            $prompt .= "Exercise Log: {$journal->exercise_log}\n";
+            $prompt .= "Nhật ký tập luyện: {$journal->exercise_log}\n";
         }
         if ($journal->mood) {
-            $prompt .= "Mood: {$journal->mood}";
+            $prompt .= "Tâm trạng: {$journal->mood}";
             if ($journal->mood_score) {
-                $prompt .= " (Score: {$journal->mood_score}/10)";
+                $prompt .= " (Điểm: {$journal->mood_score}/10)";
             }
             $prompt .= "\n";
             if ($journal->mood_notes) {
-                $prompt .= "Mood Notes: {$journal->mood_notes}\n";
+                $prompt .= "Ghi chú tâm trạng: {$journal->mood_notes}\n";
             }
         }
         if ($journal->notes) {
-            $prompt .= "Additional Notes: {$journal->notes}\n";
+            $prompt .= "Ghi chú bổ sung: {$journal->notes}\n";
         }
 
         if ($profile) {
-            $prompt .= "\nUSER PROFILE:\n";
-            if ($profile->age) $prompt .= "- Age: {$profile->age}\n";
-            if ($profile->gender) $prompt .= "- Gender: {$profile->gender}\n";
+            $prompt .= "\nHỒ SƠ NGƯỜI DÙNG:\n";
+            if ($profile->age) $prompt .= "- Tuổi: {$profile->age}\n";
+            if ($profile->gender) $prompt .= "- Giới tính: {$profile->gender}\n";
             if ($profile->bmi) $prompt .= "- BMI: {$profile->bmi}\n";
-            if ($profile->medical_history) $prompt .= "- Medical History: {$profile->medical_history}\n";
-            if ($profile->allergies) $prompt .= "- Allergies: {$profile->allergies}\n";
+            if ($profile->medical_history) $prompt .= "- Tiền sử bệnh: {$profile->medical_history}\n";
+            if ($profile->allergies) $prompt .= "- Dị ứng: {$profile->allergies}\n";
             if ($profile->health_goals) {
                 $goals = is_array($profile->health_goals) ? implode(', ', $profile->health_goals) : $profile->health_goals;
-                $prompt .= "- Health Goals: {$goals}\n";
+                $prompt .= "- Mục tiêu sức khỏe: {$goals}\n";
             }
         }
 
-        $prompt .= "\nANALYZE AND PROVIDE:\n";
-        $prompt .= "1. Actionable health suggestions (3-5 items) based on the entry\n";
-        $prompt .= "2. Warnings if any health risks detected\n";
-        $prompt .= "3. Whether doctor consultation is recommended (true/false)\n";
-        $prompt .= "4. Reason for doctor recommendation if applicable\n\n";
+        $prompt .= "\nPHÂN TÍCH VÀ CUNG CẤP (TẤT CẢ PHẢI BẰNG TIẾNG VIỆT):\n";
+        $prompt .= "1. Các gợi ý sức khỏe có thể thực hiện (3-5 mục) dựa trên mục nhật ký - VIẾT BẰNG TIẾNG VIỆT\n";
+        $prompt .= "2. Cảnh báo nếu phát hiện bất kỳ rủi ro sức khỏe nào - VIẾT BẰNG TIẾNG VIỆT\n";
+        $prompt .= "3. Có nên tư vấn bác sĩ hay không (true/false)\n";
+        $prompt .= "4. Lý do khuyên tư vấn bác sĩ nếu có - VIẾT BẰNG TIẾNG VIỆT\n\n";
         
-        $prompt .= "RETURN JSON FORMAT (REQUIRED):\n";
-        $prompt .= '{"suggestions": ["suggestion 1", "suggestion 2", ...], "warnings": ["warning 1", ...], "doctor_recommended": true/false, "doctor_reason": "reason or null"}';
+        $prompt .= "TRẢ VỀ ĐỊNH DẠNG JSON (BẮT BUỘC):\n";
+        $prompt .= '{"suggestions": ["gợi ý 1 bằng tiếng Việt", "gợi ý 2 bằng tiếng Việt", ...], "warnings": ["cảnh báo 1 bằng tiếng Việt", ...], "doctor_recommended": true/false, "doctor_reason": "lý do bằng tiếng Việt hoặc null"}';
         
-        $prompt .= "\n\nWrite in clear, concise ENGLISH. Prioritize user safety.";
+        $prompt .= "\n\nQUAN TRỌNG: TẤT CẢ suggestions, warnings, doctor_reason PHẢI viết bằng TIẾNG VIỆT. KHÔNG được sử dụng tiếng Anh. Viết rõ ràng, ngắn gọn. Ưu tiên an toàn người dùng.";
 
         return $prompt;
     }
@@ -469,15 +456,21 @@ class HealthJournalService
         if ($decoded && isset($decoded['suggestions']) && is_array($decoded['suggestions'])) {
             return [
                 'suggestions' => array_map(function($s) {
+                    $message = is_string($s) ? $s : (is_array($s) ? ($s['message'] ?? '') : '');
+                    // Remove any existing AI prefix
+                    $message = preg_replace('/^🤖\s*AI:\s*/i', '', $message);
                     return [
                         'type' => 'ai', 
-                        'message' => is_string($s) ? '🤖 AI: ' . $s : $s
+                        'message' => $message
                     ];
                 }, $decoded['suggestions']),
                 'warnings' => isset($decoded['warnings']) && is_array($decoded['warnings']) ? array_map(function($w) {
+                    $message = is_string($w) ? $w : (is_array($w) ? ($w['message'] ?? '') : '');
+                    // Remove any existing AI prefix
+                    $message = preg_replace('/^⚠️\s*AI:\s*/i', '', $message);
                     return [
                         'level' => 'medium', 
-                        'message' => is_string($w) ? '⚠️ AI: ' . $w : $w, 
+                        'message' => $message, 
                         'type' => 'ai'
                     ];
                 }, $decoded['warnings']) : [],

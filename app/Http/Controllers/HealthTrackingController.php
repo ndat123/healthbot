@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\HealthMetric;
 use App\Models\Reminder;
 use App\Models\AIConsultation;
+use App\Services\NotificationService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Carbon\Carbon;
@@ -48,7 +49,7 @@ class HealthTrackingController extends Controller
     public function storeMetric(Request $request)
     {
         $validated = $request->validate([
-            'recorded_date' => 'required|date',
+            'recorded_date' => 'required|date|before_or_equal:today',
             'weight' => 'nullable|numeric|min:20|max:300',
             'height' => 'nullable|numeric|min:50|max:250',
             'blood_pressure_systolic' => 'nullable|numeric|min:50|max:250',
@@ -58,19 +59,44 @@ class HealthTrackingController extends Controller
             'notes' => 'nullable|string|max:1000',
         ]);
 
-        $metric = HealthMetric::create([
-            'user_id' => Auth::id(),
-            'recorded_date' => $validated['recorded_date'],
-            'weight' => $validated['weight'] ?? null,
-            'height' => $validated['height'] ?? null,
-            'blood_pressure_systolic' => $validated['blood_pressure_systolic'] ?? null,
-            'blood_pressure_diastolic' => $validated['blood_pressure_diastolic'] ?? null,
-            'blood_sugar' => $validated['blood_sugar'] ?? null,
-            'heart_rate' => $validated['heart_rate'] ?? null,
-            'notes' => $validated['notes'] ?? null,
-        ]);
+        $recordedDate = Carbon::parse($validated['recorded_date'])->format('Y-m-d');
+        
+        // Check if metric already exists for this date
+        $existingMetric = HealthMetric::where('user_id', Auth::id())
+            ->whereDate('recorded_date', $recordedDate)
+            ->first();
 
-        return back()->with('success', 'Health metric recorded successfully!');
+        if ($existingMetric) {
+            // Update existing metric
+            $existingMetric->update([
+                'weight' => $validated['weight'] ?? $existingMetric->weight,
+                'height' => $validated['height'] ?? $existingMetric->height,
+                'blood_pressure_systolic' => $validated['blood_pressure_systolic'] ?? $existingMetric->blood_pressure_systolic,
+                'blood_pressure_diastolic' => $validated['blood_pressure_diastolic'] ?? $existingMetric->blood_pressure_diastolic,
+                'blood_sugar' => $validated['blood_sugar'] ?? $existingMetric->blood_sugar,
+                'heart_rate' => $validated['heart_rate'] ?? $existingMetric->heart_rate,
+                'notes' => $validated['notes'] ?? $existingMetric->notes,
+            ]);
+            
+            $message = 'Chỉ số sức khỏe cho ngày ' . Carbon::parse($recordedDate)->format('d/m/Y') . ' đã được cập nhật!';
+        } else {
+            // Create new metric
+            HealthMetric::create([
+                'user_id' => Auth::id(),
+                'recorded_date' => $recordedDate,
+                'weight' => $validated['weight'] ?? null,
+                'height' => $validated['height'] ?? null,
+                'blood_pressure_systolic' => $validated['blood_pressure_systolic'] ?? null,
+                'blood_pressure_diastolic' => $validated['blood_pressure_diastolic'] ?? null,
+                'blood_sugar' => $validated['blood_sugar'] ?? null,
+                'heart_rate' => $validated['heart_rate'] ?? null,
+                'notes' => $validated['notes'] ?? null,
+            ]);
+            
+            $message = 'Chỉ số sức khỏe đã được ghi nhận thành công!';
+        }
+
+        return back()->with('success', $message);
     }
 
     /**
@@ -102,7 +128,40 @@ class HealthTrackingController extends Controller
             'end_date' => $validated['end_date'] ?? null,
         ]);
 
-        return back()->with('success', 'Reminder created successfully!');
+        // Tạo thông báo khi reminder được tạo
+        $user = Auth::user();
+        $notificationService = app(NotificationService::class);
+        
+        $reminderTypeLabels = [
+            'medication' => 'Thuốc',
+            'water' => 'Nước',
+            'exercise' => 'Tập thể dục',
+            'meal' => 'Bữa ăn',
+            'appointment' => 'Cuộc hẹn',
+            'other' => 'Khác',
+        ];
+        
+        $reminderTypeLabel = $reminderTypeLabels[$reminder->reminder_type] ?? 'Nhắc nhở';
+        $recurringText = $reminder->is_recurring ? ' (Lặp lại)' : '';
+        
+        $title = "Nhắc nhở mới đã được tạo";
+        $message = "Nhắc nhở '{$reminder->title}' đã được tạo thành công. Thời gian: {$reminder->reminder_time}";
+        
+        $notificationService->createNotification(
+            $user,
+            $title,
+            $message,
+            'reminder',
+            route('health-tracking.index'),
+            [
+                'reminder_id' => $reminder->id,
+                'reminder_type' => $reminder->reminder_type,
+                'reminder_time' => $reminder->reminder_time,
+                'is_recurring' => $reminder->is_recurring,
+            ]
+        );
+
+        return back()->with('success', 'Nhắc nhở đã được tạo thành công!');
     }
 
     /**
@@ -116,10 +175,49 @@ class HealthTrackingController extends Controller
             'is_active' => 'required|boolean',
         ]);
 
+        $oldStatus = $reminder->is_active;
         $reminder->is_active = $validated['is_active'];
         $reminder->save();
 
-        return back()->with('success', 'Reminder updated!');
+        // Tạo thông báo khi reminder được toggle
+        $user = Auth::user();
+        $notificationService = app(NotificationService::class);
+        
+        $reminderTypeLabels = [
+            'medication' => 'Thuốc',
+            'water' => 'Nước',
+            'exercise' => 'Tập thể dục',
+            'meal' => 'Bữa ăn',
+            'appointment' => 'Cuộc hẹn',
+            'other' => 'Khác',
+        ];
+        
+        $reminderTypeLabel = $reminderTypeLabels[$reminder->reminder_type] ?? 'Nhắc nhở';
+        
+        if ($reminder->is_active) {
+            // Reminder được kích hoạt
+            $title = "Nhắc nhở đã được kích hoạt";
+            $message = "Nhắc nhở '{$reminder->title}' ({$reminderTypeLabel}) đã được kích hoạt. Thời gian: {$reminder->reminder_time}";
+        } else {
+            // Reminder được tắt
+            $title = "Nhắc nhở đã được tắt";
+            $message = "Nhắc nhở '{$reminder->title}' ({$reminderTypeLabel}) đã được tắt.";
+        }
+        
+        $notificationService->createNotification(
+            $user,
+            $title,
+            $message,
+            'reminder',
+            route('health-tracking.index'),
+            [
+                'reminder_id' => $reminder->id,
+                'reminder_type' => $reminder->reminder_type,
+                'reminder_time' => $reminder->reminder_time,
+            ]
+        );
+
+        return back()->with('success', 'Nhắc nhở đã được cập nhật!');
     }
 
     /**

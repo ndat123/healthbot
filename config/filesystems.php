@@ -60,6 +60,24 @@ return [
             'report' => false,
         ],
 
+        'r2' => [
+            'driver' => 's3',
+            'key' => env('R2_ACCESS_KEY_ID'),
+            'secret' => env('R2_SECRET_ACCESS_KEY'),
+            'region' => env('R2_REGION', 'auto'),
+            'bucket' => env('R2_BUCKET', 'healthbot'),
+            'url' => env('R2_PUBLIC_URL', 'https://pub-07cce266cb7a4eff97bc6503d84b6470.r2.dev'),
+            'endpoint' => env('R2_ENDPOINT', 'https://a64a77eb52e3feb8293f4196ff039b0a.r2.cloudflarestorage.com'),
+            'use_path_style_endpoint' => true,
+            'options' => [
+                'http' => [
+                    'verify' => false, // Disable SSL verification for R2 (development)
+                ],
+            ],
+            'throw' => false,
+            'report' => false,
+        ],
+
     ],
 
     /*

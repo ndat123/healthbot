@@ -24,5 +24,14 @@ class DatabaseSeeder extends Seeder
 
         // Seed feedback mẫu
         $this->call(FeedbackSeeder::class);
+        
+        // Seed doctors
+        $this->call(DoctorSeeder::class);
+        
+        // Seed doctor reviews
+        $this->call(DoctorReviewSeeder::class);
+        
+        // Seed medical content
+        $this->call(MedicalContentSeeder::class);
     }
 }

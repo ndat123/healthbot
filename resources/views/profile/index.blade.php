@@ -4,8 +4,8 @@
 <div class="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-50 py-12 px-4 sm:px-6 lg:px-8">
     <div class="max-w-4xl mx-auto">
         <div class="text-center mb-8">
-            <h1 class="text-4xl font-bold text-gray-900 mb-4">My Profile</h1>
-            <p class="text-xl text-gray-600">Manage your account information and settings</p>
+            <h1 class="text-4xl font-bold text-gray-900 mb-4">Hồ Sơ Của Tôi</h1>
+            <p class="text-xl text-gray-600">Quản lý thông tin tài khoản và cài đặt của bạn</p>
         </div>
 
         @if(session('success'))
@@ -35,7 +35,7 @@
             <div class="lg:col-span-2 space-y-6">
                 <!-- Basic Information -->
                 <div class="bg-white rounded-xl shadow-lg p-8">
-                    <h2 class="text-2xl font-bold text-gray-800 mb-6">Basic Information</h2>
+                    <h2 class="text-2xl font-bold text-gray-800 mb-6">Thông Tin Cơ Bản</h2>
                     <form action="{{ route('profile.update') }}" method="POST" enctype="multipart/form-data">
                         @csrf
                         @method('PUT')
@@ -44,7 +44,7 @@
                         <div class="text-center mb-6">
                             <div class="inline-block relative">
                                 @if($user->avatar)
-                                    <img src="{{ asset('storage/' . $user->avatar) }}" alt="Avatar" class="w-32 h-32 rounded-full object-cover border-4 border-blue-500">
+                                    <img src="{{ $user->avatar_url }}" alt="Avatar" class="w-32 h-32 rounded-full object-cover border-4 border-blue-500">
                                 @else
                                     <div class="w-32 h-32 rounded-full bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center text-white text-4xl font-bold border-4 border-blue-500">
                                         {{ strtoupper(substr($user->name, 0, 1)) }}
@@ -56,13 +56,13 @@
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"></path>
                                     </svg>
                                 </label>
-                                <input type="file" id="avatar" name="avatar" accept="image/*" class="hidden" onchange="this.form.submit()">
+                                <input type="file" id="avatar" name="avatar" accept="image/*" class="hidden" onchange="handleAvatarUpload(this)">
                             </div>
                         </div>
 
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                             <div>
-                                <label for="name" class="block text-sm font-medium text-gray-700 mb-2">Full Name</label>
+                                <label for="name" class="block text-sm font-medium text-gray-700 mb-2">Họ và tên</label>
                                 <input type="text" id="name" name="name" value="{{ old('name', $user->name) }}" required
                                        class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
                             </div>
@@ -72,27 +72,27 @@
                                        class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
                             </div>
                             <div>
-                                <label for="phone" class="block text-sm font-medium text-gray-700 mb-2">Phone</label>
+                                <label for="phone" class="block text-sm font-medium text-gray-700 mb-2">Số điện thoại</label>
                                 <input type="text" id="phone" name="phone" value="{{ old('phone', $user->phone) }}"
                                        class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
                             </div>
                             <div>
-                                <label for="date_of_birth" class="block text-sm font-medium text-gray-700 mb-2">Date of Birth</label>
+                                <label for="date_of_birth" class="block text-sm font-medium text-gray-700 mb-2">Ngày sinh</label>
                                 <input type="date" id="date_of_birth" name="date_of_birth" value="{{ old('date_of_birth', $user->date_of_birth) }}"
                                        class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
                             </div>
                             <div>
-                                <label for="gender" class="block text-sm font-medium text-gray-700 mb-2">Gender</label>
+                                <label for="gender" class="block text-sm font-medium text-gray-700 mb-2">Giới tính</label>
                                 <select id="gender" name="gender"
                                         class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
-                                    <option value="">Select...</option>
-                                    <option value="male" {{ old('gender', $user->gender) === 'male' ? 'selected' : '' }}>Male</option>
-                                    <option value="female" {{ old('gender', $user->gender) === 'female' ? 'selected' : '' }}>Female</option>
-                                    <option value="other" {{ old('gender', $user->gender) === 'other' ? 'selected' : '' }}>Other</option>
+                                    <option value="">Chọn...</option>
+                                    <option value="male" {{ old('gender', $user->gender) === 'male' ? 'selected' : '' }}>Nam</option>
+                                    <option value="female" {{ old('gender', $user->gender) === 'female' ? 'selected' : '' }}>Nữ</option>
+                                    <option value="other" {{ old('gender', $user->gender) === 'other' ? 'selected' : '' }}>Khác</option>
                                 </select>
                             </div>
                             <div class="md:col-span-2">
-                                <label for="address" class="block text-sm font-medium text-gray-700 mb-2">Address</label>
+                                <label for="address" class="block text-sm font-medium text-gray-700 mb-2">Địa chỉ</label>
                                 <textarea id="address" name="address" rows="2"
                                           class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">{{ old('address', $user->address) }}</textarea>
                             </div>
@@ -100,7 +100,7 @@
 
                         <div class="mt-6">
                             <button type="submit" class="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition-colors font-semibold">
-                                Update Profile
+                                Cập nhật hồ sơ
                             </button>
                         </div>
                     </form>
@@ -108,24 +108,24 @@
 
                 <!-- Change Password -->
                 <div class="bg-white rounded-xl shadow-lg p-8">
-                    <h2 class="text-2xl font-bold text-gray-800 mb-6">Change Password</h2>
+                    <h2 class="text-2xl font-bold text-gray-800 mb-6">Đổi Mật Khẩu</h2>
                     <form action="{{ route('profile.password.update') }}" method="POST">
                         @csrf
                         @method('PUT')
 
                         <div class="space-y-4">
                             <div>
-                                <label for="current_password" class="block text-sm font-medium text-gray-700 mb-2">Current Password</label>
+                                <label for="current_password" class="block text-sm font-medium text-gray-700 mb-2">Mật khẩu hiện tại</label>
                                 <input type="password" id="current_password" name="current_password" required
                                        class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
                             </div>
                             <div>
-                                <label for="password" class="block text-sm font-medium text-gray-700 mb-2">New Password</label>
+                                <label for="password" class="block text-sm font-medium text-gray-700 mb-2">Mật khẩu mới</label>
                                 <input type="password" id="password" name="password" required minlength="8"
                                        class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
                             </div>
                             <div>
-                                <label for="password_confirmation" class="block text-sm font-medium text-gray-700 mb-2">Confirm New Password</label>
+                                <label for="password_confirmation" class="block text-sm font-medium text-gray-700 mb-2">Xác nhận mật khẩu mới</label>
                                 <input type="password" id="password_confirmation" name="password_confirmation" required minlength="8"
                                        class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
                             </div>
@@ -133,27 +133,27 @@
 
                         <div class="mt-6">
                             <button type="submit" class="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition-colors font-semibold">
-                                Update Password
+                                Cập nhật mật khẩu
                             </button>
                         </div>
                     </form>
                 </div>
 
-                <!-- Settings Section -->
-                <div id="settings" class="bg-white rounded-xl shadow-lg p-8">
-                    <h2 class="text-2xl font-bold text-gray-800 mb-6">Settings</h2>
+                {{-- Settings Section - Commented out --}}
+                {{-- <div id="settings" class="bg-white rounded-xl shadow-lg p-8">
+                    <h2 class="text-2xl font-bold text-gray-800 mb-6">Cài Đặt</h2>
                     <form action="{{ route('profile.settings.update') }}" method="POST">
                         @csrf
                         @method('PUT')
 
                         <!-- Notifications -->
                         <div class="mb-8">
-                            <h3 class="text-lg font-semibold text-gray-800 mb-4">Notifications</h3>
+                            <h3 class="text-lg font-semibold text-gray-800 mb-4">Thông Báo</h3>
                             <div class="space-y-3">
                                 <div class="flex items-center justify-between">
                                     <div>
-                                        <label for="email_notifications" class="text-sm font-medium text-gray-700">Email Notifications</label>
-                                        <p class="text-xs text-gray-500">Receive notifications via email</p>
+                                        <label for="email_notifications" class="text-sm font-medium text-gray-700">Thông báo Email</label>
+                                        <p class="text-xs text-gray-500">Nhận thông báo qua email</p>
                                     </div>
                                     <label class="relative inline-flex items-center cursor-pointer">
                                         <input type="checkbox" id="email_notifications" name="email_notifications" value="1" 
@@ -164,8 +164,8 @@
                                 </div>
                                 <div class="flex items-center justify-between">
                                     <div>
-                                        <label for="sms_notifications" class="text-sm font-medium text-gray-700">SMS Notifications</label>
-                                        <p class="text-xs text-gray-500">Receive notifications via SMS</p>
+                                        <label for="sms_notifications" class="text-sm font-medium text-gray-700">Thông báo SMS</label>
+                                        <p class="text-xs text-gray-500">Nhận thông báo qua SMS</p>
                                     </div>
                                     <label class="relative inline-flex items-center cursor-pointer">
                                         <input type="checkbox" id="sms_notifications" name="sms_notifications" value="1" 
@@ -176,8 +176,8 @@
                                 </div>
                                 <div class="flex items-center justify-between">
                                     <div>
-                                        <label for="health_reminders" class="text-sm font-medium text-gray-700">Health Reminders</label>
-                                        <p class="text-xs text-gray-500">Get reminders for health checkups</p>
+                                        <label for="health_reminders" class="text-sm font-medium text-gray-700">Nhắc nhở sức khỏe</label>
+                                        <p class="text-xs text-gray-500">Nhận nhắc nhở cho các cuộc kiểm tra sức khỏe</p>
                                     </div>
                                     <label class="relative inline-flex items-center cursor-pointer">
                                         <input type="checkbox" id="health_reminders" name="health_reminders" value="1" 
@@ -188,8 +188,8 @@
                                 </div>
                                 <div class="flex items-center justify-between">
                                     <div>
-                                        <label for="appointment_reminders" class="text-sm font-medium text-gray-700">Appointment Reminders</label>
-                                        <p class="text-xs text-gray-500">Get reminders for appointments</p>
+                                        <label for="appointment_reminders" class="text-sm font-medium text-gray-700">Nhắc nhở cuộc hẹn</label>
+                                        <p class="text-xs text-gray-500">Nhận nhắc nhở cho các cuộc hẹn</p>
                                     </div>
                                     <label class="relative inline-flex items-center cursor-pointer">
                                         <input type="checkbox" id="appointment_reminders" name="appointment_reminders" value="1" 
@@ -200,8 +200,8 @@
                                 </div>
                                 <div class="flex items-center justify-between">
                                     <div>
-                                        <label for="newsletter_subscription" class="text-sm font-medium text-gray-700">Newsletter Subscription</label>
-                                        <p class="text-xs text-gray-500">Subscribe to our newsletter</p>
+                                        <label for="newsletter_subscription" class="text-sm font-medium text-gray-700">Đăng ký bản tin</label>
+                                        <p class="text-xs text-gray-500">Đăng ký nhận bản tin của chúng tôi</p>
                                     </div>
                                     <label class="relative inline-flex items-center cursor-pointer">
                                         <input type="checkbox" id="newsletter_subscription" name="newsletter_subscription" value="1" 
@@ -215,10 +215,10 @@
 
                         <!-- Preferences -->
                         <div class="mb-8">
-                            <h3 class="text-lg font-semibold text-gray-800 mb-4">Preferences</h3>
+                            <h3 class="text-lg font-semibold text-gray-800 mb-4">Tùy Chọn</h3>
                             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                                 <div>
-                                    <label for="language" class="block text-sm font-medium text-gray-700 mb-2">Language</label>
+                                    <label for="language" class="block text-sm font-medium text-gray-700 mb-2">Ngôn ngữ</label>
                                     <select id="language" name="language" 
                                             class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
                                         <option value="en" {{ old('language', $settings->language ?? 'en') == 'en' ? 'selected' : '' }}>English</option>
@@ -228,7 +228,7 @@
                                     </select>
                                 </div>
                                 <div>
-                                    <label for="timezone" class="block text-sm font-medium text-gray-700 mb-2">Timezone</label>
+                                    <label for="timezone" class="block text-sm font-medium text-gray-700 mb-2">Múi giờ</label>
                                     <select id="timezone" name="timezone" 
                                             class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
                                         <option value="UTC" {{ old('timezone', $settings->timezone ?? 'UTC') == 'UTC' ? 'selected' : '' }}>UTC</option>
@@ -242,21 +242,21 @@
 
                         <!-- Privacy -->
                         <div class="mb-8">
-                            <h3 class="text-lg font-semibold text-gray-800 mb-4">Privacy</h3>
+                            <h3 class="text-lg font-semibold text-gray-800 mb-4">Quyền Riêng Tư</h3>
                             <div class="space-y-4">
                                 <div>
-                                    <label for="privacy_level" class="block text-sm font-medium text-gray-700 mb-2">Privacy Level</label>
+                                    <label for="privacy_level" class="block text-sm font-medium text-gray-700 mb-2">Mức độ riêng tư</label>
                                     <select id="privacy_level" name="privacy_level" 
                                             class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
-                                        <option value="private" {{ old('privacy_level', $settings->privacy_level ?? 'private') == 'private' ? 'selected' : '' }}>Private</option>
-                                        <option value="friends" {{ old('privacy_level', $settings->privacy_level ?? 'private') == 'friends' ? 'selected' : '' }}>Friends Only</option>
-                                        <option value="public" {{ old('privacy_level', $settings->privacy_level ?? 'private') == 'public' ? 'selected' : '' }}>Public</option>
+                                        <option value="private" {{ old('privacy_level', $settings->privacy_level ?? 'private') == 'private' ? 'selected' : '' }}>Riêng tư</option>
+                                        <option value="friends" {{ old('privacy_level', $settings->privacy_level ?? 'private') == 'friends' ? 'selected' : '' }}>Chỉ bạn bè</option>
+                                        <option value="public" {{ old('privacy_level', $settings->privacy_level ?? 'private') == 'public' ? 'selected' : '' }}>Công khai</option>
                                     </select>
                                 </div>
                                 <div class="flex items-center justify-between">
                                     <div>
-                                        <label for="share_health_data" class="text-sm font-medium text-gray-700">Share Health Data</label>
-                                        <p class="text-xs text-gray-500">Allow sharing anonymized health data for research</p>
+                                        <label for="share_health_data" class="text-sm font-medium text-gray-700">Chia sẻ dữ liệu sức khỏe</label>
+                                        <p class="text-xs text-gray-500">Cho phép chia sẻ dữ liệu sức khỏe đã ẩn danh cho nghiên cứu</p>
                                     </div>
                                     <label class="relative inline-flex items-center cursor-pointer">
                                         <input type="checkbox" id="share_health_data" name="share_health_data" value="1" 
@@ -267,8 +267,8 @@
                                 </div>
                                 <div class="flex items-center justify-between">
                                     <div>
-                                        <label for="allow_ai_learning" class="text-sm font-medium text-gray-700">Allow AI Learning</label>
-                                        <p class="text-xs text-gray-500">Help improve AI by allowing it to learn from your interactions</p>
+                                        <label for="allow_ai_learning" class="text-sm font-medium text-gray-700">Cho phép AI học tập</label>
+                                        <p class="text-xs text-gray-500">Giúp cải thiện AI bằng cách cho phép nó học từ các tương tác của bạn</p>
                                     </div>
                                     <label class="relative inline-flex items-center cursor-pointer">
                                         <input type="checkbox" id="allow_ai_learning" name="allow_ai_learning" value="1" 
@@ -282,30 +282,30 @@
 
                         <div class="mt-6">
                             <button type="submit" class="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition-colors font-semibold">
-                                Save Settings
+                                Lưu Cài Đặt
                             </button>
                         </div>
                     </form>
-                </div>
+                </div> --}}
             </div>
 
             <!-- Sidebar -->
             <div class="space-y-6">
                 <!-- Account Info -->
                 <div class="bg-white rounded-xl shadow-lg p-6">
-                    <h3 class="text-lg font-semibold text-gray-800 mb-4">Account Information</h3>
+                    <h3 class="text-lg font-semibold text-gray-800 mb-4">Thông Tin Tài Khoản</h3>
                     <div class="space-y-3 text-sm">
                         <div>
-                            <p class="text-gray-600">Member Since</p>
+                            <p class="text-gray-600">Thành viên từ</p>
                             <p class="font-semibold text-gray-800">{{ $user->created_at->format('M Y') }}</p>
                         </div>
                         <div>
-                            <p class="text-gray-600">Last Login</p>
-                            <p class="font-semibold text-gray-800">{{ $user->last_login ? \Carbon\Carbon::parse($user->last_login)->diffForHumans() : 'Never' }}</p>
+                            <p class="text-gray-600">Đăng nhập lần cuối</p>
+                            <p class="font-semibold text-gray-800">{{ $user->last_login ? \Carbon\Carbon::parse($user->last_login)->diffForHumans() : 'Chưa bao giờ' }}</p>
                         </div>
                         @if($user->role)
                         <div>
-                            <p class="text-gray-600">Role</p>
+                            <p class="text-gray-600">Vai trò</p>
                             <p class="font-semibold text-gray-800">{{ ucfirst($user->role) }}</p>
                         </div>
                         @endif
@@ -314,18 +314,55 @@
 
                 <!-- Quick Links -->
                 <div class="bg-white rounded-xl shadow-lg p-6">
-                    <h3 class="text-lg font-semibold text-gray-800 mb-4">Quick Links</h3>
+                    <h3 class="text-lg font-semibold text-gray-800 mb-4">Liên Kết Nhanh</h3>
                     <div class="space-y-2">
-                        <a href="{{ route('health-plans.index') }}" class="block text-blue-600 hover:text-blue-800 transition-colors">Health Plans</a>
-                        <a href="{{ route('health-journal.index') }}" class="block text-blue-600 hover:text-blue-800 transition-colors">Health Journal</a>
-                        <a href="{{ route('health-tracking.index') }}" class="block text-blue-600 hover:text-blue-800 transition-colors">Health Tracking</a>
-                        <a href="{{ route('nutrition.index') }}" class="block text-blue-600 hover:text-blue-800 transition-colors">Nutrition Plans</a>
-                        <a href="{{ route('ai-consultation.index') }}" class="block text-blue-600 hover:text-blue-800 transition-colors">AI Consultation</a>
+                        <a href="{{ route('health-plans.index') }}" class="block text-blue-600 hover:text-blue-800 transition-colors">Kế hoạch sức khỏe</a>
+                        <a href="{{ route('health-journal.index') }}" class="block text-blue-600 hover:text-blue-800 transition-colors">Nhật ký sức khỏe</a>
+                        <a href="{{ route('health-tracking.index') }}" class="block text-blue-600 hover:text-blue-800 transition-colors">Theo dõi sức khỏe</a>
+                        <a href="{{ route('nutrition.index') }}" class="block text-blue-600 hover:text-blue-800 transition-colors">Kế hoạch dinh dưỡng</a>
+                        <a href="{{ route('ai-consultation.index') }}" class="block text-blue-600 hover:text-blue-800 transition-colors">Tư vấn AI</a>
                     </div>
                 </div>
             </div>
         </div>
     </div>
 </div>
+
+<script>
+function handleAvatarUpload(input) {
+    if (input.files && input.files[0]) {
+        // Show loading state
+        const form = input.closest('form');
+        const avatarContainer = input.closest('.inline-block');
+        
+        // Disable form during upload
+        form.style.opacity = '0.6';
+        form.style.pointerEvents = 'none';
+        
+        // Show upload indicator
+        const loadingIndicator = document.createElement('div');
+        loadingIndicator.className = 'absolute inset-0 bg-black bg-opacity-50 rounded-full flex items-center justify-center z-10';
+        loadingIndicator.innerHTML = '<div class="animate-spin rounded-full h-8 w-8 border-b-2 border-white"></div>';
+        avatarContainer.appendChild(loadingIndicator);
+        
+        // Submit form
+        form.submit();
+    }
+}
+
+// Show success message if upload was successful
+@if(session('success'))
+    setTimeout(() => {
+        const successMsg = document.createElement('div');
+        successMsg.className = 'fixed top-4 right-4 bg-green-500 text-white px-6 py-3 rounded-lg shadow-lg z-50';
+        successMsg.innerHTML = '{{ session("success") }}';
+        document.body.appendChild(successMsg);
+        
+        setTimeout(() => {
+            successMsg.remove();
+        }, 3000);
+    }, 100);
+@endif
+</script>
 @endsection
 

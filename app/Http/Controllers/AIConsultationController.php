@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\AIConsultation;
 use App\Models\HealthProfile;
 use App\Services\AIConsultationService;
+use App\Helpers\SettingsHelper;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
@@ -43,15 +44,29 @@ class AIConsultationController extends Controller
     {
         $user = Auth::user();
         $sessionId = AIConsultation::generateSessionId();
-
-        // Welcome message
-        $welcomeMessage = "Hello! I'm AI HealthBot, your AI health consultant. I'm here to help you with:\n\n" .
-                         "• Understanding symptoms and health concerns\n" .
-                         "• Personalized nutrition advice\n" .
-                         "• Lifestyle and healthy habit recommendations\n" .
-                         "• Suggestions for appropriate medical specialists\n\n" .
-                         "**Important**: My advice is for informational purposes only and does not replace professional medical consultation.\n\n" .
-                         "How can I help you today?";
+        
+        // Lấy ngôn ngữ từ settings
+        $language = SettingsHelper::getUserLanguage($user);
+        
+        // Welcome message theo ngôn ngữ
+        $welcomeMessages = [
+            'vi' => "Xin chào! Tôi là AI HealthBot, chuyên gia tư vấn sức khỏe AI của bạn. Tôi có thể giúp bạn:\n\n" .
+                   "• Hiểu về các triệu chứng và vấn đề sức khỏe\n" .
+                   "• Tư vấn dinh dưỡng cá nhân hóa\n" .
+                   "• Khuyến nghị về lối sống và thói quen lành mạnh\n" .
+                   "• Đề xuất các chuyên khoa y tế phù hợp\n\n" .
+                   "**Quan trọng**: Lời khuyên của tôi chỉ mang tính chất thông tin và không thay thế cho tư vấn y tế chuyên nghiệp.\n\n" .
+                   "Tôi có thể giúp gì cho bạn hôm nay?",
+            'en' => "Hello! I'm AI HealthBot, your AI health consultant. I'm here to help you with:\n\n" .
+                   "• Understanding symptoms and health concerns\n" .
+                   "• Personalized nutrition advice\n" .
+                   "• Lifestyle and healthy habit recommendations\n" .
+                   "• Suggestions for appropriate medical specialists\n\n" .
+                   "**Important**: My advice is for informational purposes only and does not replace professional medical consultation.\n\n" .
+                   "How can I help you today?",
+        ];
+        
+        $welcomeMessage = $welcomeMessages[$language] ?? $welcomeMessages['vi'];
 
         return response()->json([
             'session_id' => $sessionId,
@@ -81,7 +96,7 @@ class AIConsultationController extends Controller
 
             if (!$disclaimerAcknowledged) {
                 return response()->json([
-                    'error' => 'Please acknowledge the medical disclaimer before continuing.',
+                    'error' => 'Vui lòng xác nhận tuyên bố từ chối trách nhiệm y tế trước khi tiếp tục.',
                 ], 400);
             }
 
@@ -121,7 +136,7 @@ class AIConsultationController extends Controller
                 ]);
                 
                 return response()->json([
-                    'error' => 'Unable to get AI response. Please check your API key or try again later.',
+                    'error' => 'Không thể nhận phản hồi từ AI. Vui lòng kiểm tra API key hoặc thử lại sau.',
                     'details' => config('app.debug') ? $e->getMessage() : null,
                 ], 500);
             }
@@ -159,14 +174,14 @@ class AIConsultationController extends Controller
             ]);
         } catch (\Illuminate\Validation\ValidationException $e) {
             return response()->json([
-                'error' => 'Validation error: ' . implode(', ', $e->errors()),
+                'error' => 'Lỗi xác thực: ' . implode(', ', $e->errors()),
             ], 422);
         } catch (\Exception $e) {
             Log::error('AI Consultation Error: ' . $e->getMessage());
             Log::error('Stack trace: ' . $e->getTraceAsString());
             
             return response()->json([
-                'error' => 'An error occurred while processing your request. Please try again.',
+                'error' => 'Đã xảy ra lỗi khi xử lý yêu cầu của bạn. Vui lòng thử lại.',
                 'message' => config('app.debug') ? $e->getMessage() : null,
             ], 500);
         }
@@ -219,6 +234,31 @@ class AIConsultationController extends Controller
         ];
 
         return response()->json($stats);
+    }
+
+    /**
+     * Delete consultation session
+     */
+    public function destroy($sessionId)
+    {
+        $user = Auth::user();
+        
+        // Delete all consultations in this session
+        $deleted = AIConsultation::where('user_id', $user->id)
+            ->where('session_id', $sessionId)
+            ->delete();
+
+        if ($deleted > 0) {
+            return response()->json([
+                'success' => true,
+                'message' => 'Đã xóa consultation session thành công.',
+            ]);
+        }
+
+        return response()->json([
+            'success' => false,
+            'message' => 'Không tìm thấy consultation session để xóa.',
+        ], 404);
     }
 }
 

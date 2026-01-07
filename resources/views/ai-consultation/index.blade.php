@@ -4,8 +4,8 @@
 <div class="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-50 py-8 px-4 sm:px-6 lg:px-8">
     <div class="max-w-6xl mx-auto">
         <div class="text-center mb-8">
-            <h1 class="text-4xl font-bold text-gray-900 mb-4">AI Health Consultation</h1>
-            <p class="text-xl text-gray-600">Chat with AI HealthBot for personalized health advice</p>
+            <h1 class="text-4xl font-bold text-gray-900 mb-4">Tư Vấn Sức Khỏe AI</h1>
+            <p class="text-xl text-gray-600">Trò chuyện với AI HealthBot để nhận lời khuyên sức khỏe cá nhân hóa</p>
         </div>
 
         <!-- Medical Disclaimer Banner -->
@@ -17,22 +17,22 @@
                     </svg>
                 </div>
                 <div class="ml-3 flex-1">
-                    <h3 class="text-sm font-medium text-yellow-800">Medical Disclaimer</h3>
+                    <h3 class="text-sm font-medium text-yellow-800">Tuyên Bố Từ Chối Trách Nhiệm Y Tế</h3>
                     <div class="mt-2 text-sm text-yellow-700">
                         <p class="mb-2">
-                            <strong>Important:</strong> The information provided by AI HealthBot is for educational and informational purposes only. 
-                            It is not intended to be a substitute for professional medical advice, diagnosis, or treatment.
+                            <strong>Quan trọng:</strong> Thông tin do AI HealthBot cung cấp chỉ dành cho mục đích giáo dục và thông tin. 
+                            Nó không nhằm thay thế cho lời khuyên y tế chuyên nghiệp, chẩn đoán hoặc điều trị.
                         </p>
                         <p class="mb-3">
-                            Always seek the advice of your physician or other qualified health provider with any questions you may have regarding a medical condition. 
-                            Never disregard professional medical advice or delay in seeking it because of information provided by this AI.
+                            Luôn tìm kiếm lời khuyên từ bác sĩ hoặc nhà cung cấp dịch vụ y tế có trình độ khác về bất kỳ câu hỏi nào bạn có thể có liên quan đến tình trạng y tế. 
+                            Không bao giờ bỏ qua lời khuyên y tế chuyên nghiệp hoặc trì hoãn việc tìm kiếm nó vì thông tin do AI này cung cấp.
                         </p>
                         <p class="mb-3">
-                            <strong>For medical emergencies, call emergency services immediately.</strong>
+                            <strong>Đối với các trường hợp khẩn cấp y tế, hãy gọi dịch vụ khẩn cấp ngay lập tức.</strong>
                         </p>
                         <label class="flex items-center">
                             <input type="checkbox" id="disclaimer-checkbox" class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded">
-                            <span class="ml-2 text-sm">I understand and acknowledge this disclaimer</span>
+                            <span class="ml-2 text-sm">Tôi hiểu và thừa nhận tuyên bố từ chối trách nhiệm này</span>
                         </label>
                     </div>
                 </div>
@@ -54,10 +54,10 @@
                                 </div>
                                 <div>
                                     <h2 class="font-semibold">AI HealthBot</h2>
-                                    <p class="text-xs text-blue-100">Online • Ready to help</p>
+                                    <p class="text-xs text-blue-100">Trực tuyến • Sẵn sàng hỗ trợ</p>
                                 </div>
                             </div>
-                            <button id="new-chat-btn" class="text-white hover:text-blue-100 transition-colors" title="New Chat">
+                            <button id="new-chat-btn" class="text-white hover:text-blue-100 transition-colors" title="Cuộc trò chuyện mới">
                                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
                                 </svg>
@@ -75,7 +75,7 @@
                             </div>
                             <div class="flex-1">
                                 <div class="bg-gray-100 rounded-lg p-3">
-                                    <p class="text-sm text-gray-700" id="welcome-message">Starting conversation...</p>
+                                    <p class="text-sm text-gray-700" id="welcome-message">Đang bắt đầu cuộc trò chuyện...</p>
                                 </div>
                             </div>
                         </div>
@@ -86,7 +86,7 @@
                         <form id="chat-form" class="flex space-x-2">
                             <input type="text" 
                                    id="message-input" 
-                                   placeholder="Type your health question here..." 
+                                   placeholder="Nhập câu hỏi sức khỏe của bạn tại đây..." 
                                    class="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                                    disabled>
                             <button type="submit" 
@@ -104,21 +104,34 @@
 
             <!-- Sidebar -->
             <div class="space-y-6">
+                <!-- Diagnosis Button -->
+                <div class="bg-white rounded-xl shadow-lg p-6">
+                    <a href="http://127.0.0.1:5000" target="_blank" 
+                       class="block w-full bg-gradient-to-r from-red-600 to-pink-600 text-white px-6 py-4 rounded-lg hover:from-red-700 hover:to-pink-700 transition-colors font-semibold text-center shadow-md hover:shadow-lg">
+                        <div class="flex items-center justify-center space-x-2">
+                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                            </svg>
+                            <span>Chẩn Đoán Bệnh</span>
+                        </div>
+                    </a>
+                </div>
+
                 <!-- Quick Actions -->
                 <div class="bg-white rounded-xl shadow-lg p-6">
-                    <h3 class="text-lg font-semibold text-gray-800 mb-4">Quick Questions</h3>
+                    <h3 class="text-lg font-semibold text-gray-800 mb-4">Câu Hỏi Nhanh</h3>
                     <div class="space-y-2">
                         <button class="quick-question w-full text-left px-4 py-2 bg-gray-50 hover:bg-blue-50 rounded-lg text-sm text-gray-700 hover:text-blue-600 transition-colors">
-                            What are the symptoms of flu?
+                            Các triệu chứng của cảm cúm là gì?
                         </button>
                         <button class="quick-question w-full text-left px-4 py-2 bg-gray-50 hover:bg-blue-50 rounded-lg text-sm text-gray-700 hover:text-blue-600 transition-colors">
-                            How to improve my sleep quality?
+                            Làm thế nào để cải thiện chất lượng giấc ngủ?
                         </button>
                         <button class="quick-question w-full text-left px-4 py-2 bg-gray-50 hover:bg-blue-50 rounded-lg text-sm text-gray-700 hover:text-blue-600 transition-colors">
-                            What foods are good for heart health?
+                            Thực phẩm nào tốt cho sức khỏe tim mạch?
                         </button>
                         <button class="quick-question w-full text-left px-4 py-2 bg-gray-50 hover:bg-blue-50 rounded-lg text-sm text-gray-700 hover:text-blue-600 transition-colors">
-                            When should I see a doctor?
+                            Khi nào tôi nên gặp bác sĩ?
                         </button>
                     </div>
                 </div>
@@ -126,13 +139,24 @@
                 <!-- Recent Consultations -->
                 @if($recentConsultations->count() > 0)
                 <div class="bg-white rounded-xl shadow-lg p-6">
-                    <h3 class="text-lg font-semibold text-gray-800 mb-4">Recent Consultations</h3>
+                    <h3 class="text-lg font-semibold text-gray-800 mb-4">Tư Vấn Gần Đây</h3>
                     <div class="space-y-3">
                         @foreach($recentConsultations->take(5) as $consultation)
-                            <div class="border-l-4 border-blue-500 pl-3 py-2">
-                                <p class="text-sm font-medium text-gray-800">{{ $consultation->topic ?? 'General' }}</p>
-                                <p class="text-xs text-gray-500 mt-1">{{ \Illuminate\Support\Str::limit($consultation->user_message, 50) }}</p>
-                                <p class="text-xs text-gray-400 mt-1">{{ $consultation->created_at->diffForHumans() }}</p>
+                            <div class="flex items-center justify-between border-l-4 border-blue-500 pl-3 py-2 cursor-pointer hover:bg-blue-50 rounded-r-lg transition-colors consultation-item group" 
+                                 data-session-id="{{ $consultation->session_id }}"
+                                 data-topic="{{ $consultation->topic ?? 'General' }}">
+                                <div class="flex-1">
+                                    <p class="text-sm font-medium text-gray-800">{{ $consultation->topic ?? 'General' }}</p>
+                                    <p class="text-xs text-gray-500 mt-1">{{ \Illuminate\Support\Str::limit($consultation->user_message, 50) }}</p>
+                                    <p class="text-xs text-gray-400 mt-1">{{ $consultation->created_at->diffForHumans() }}</p>
+                                </div>
+                                <button type="button" 
+                                        class="ml-2 p-1 text-red-500 hover:text-red-700 opacity-0 group-hover:opacity-100 transition-opacity delete-consultation-btn"
+                                        data-session-id="{{ $consultation->session_id }}"
+                                        onclick="event.stopPropagation(); deleteConsultation('{{ $consultation->session_id }}', this);"
+                                        title="Xóa consultation">
+                                    🗑️
+                                </button>
                             </div>
                         @endforeach
                     </div>
@@ -142,10 +166,10 @@
                 <!-- Health Profile Link -->
                 @if(!$profile)
                 <div class="bg-blue-50 border border-blue-200 rounded-xl p-6">
-                    <h3 class="text-lg font-semibold text-blue-800 mb-2">Personalize Your Experience</h3>
-                    <p class="text-sm text-blue-700 mb-4">Create your health profile to get more personalized AI responses.</p>
+                    <h3 class="text-lg font-semibold text-blue-800 mb-2">Cá Nhân Hóa Trải Nghiệm Của Bạn</h3>
+                    <p class="text-sm text-blue-700 mb-4">Tạo hồ sơ sức khỏe của bạn để nhận phản hồi AI được cá nhân hóa hơn.</p>
                     <a href="{{ route('health-plans.profile') }}" class="block text-center bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors text-sm">
-                        Create Profile
+                        Tạo Hồ Sơ
                     </a>
                 </div>
                 @endif
@@ -155,6 +179,45 @@
 </div>
 
 <script>
+// Delete consultation session - Global function
+function deleteConsultation(sessionId, button) {
+    if (!confirm('Bạn có chắc chắn muốn xóa consultation session này? Hành động này không thể hoàn tác.')) {
+        return;
+    }
+
+    // Disable button during deletion
+    $(button).prop('disabled', true).html('⏳');
+
+    $.ajax({
+        url: '{{ route("ai-consultation.destroy", ":sessionId") }}'.replace(':sessionId', sessionId),
+        method: 'DELETE',
+        headers: {
+            'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+        },
+        success: function(response) {
+            if (response.success) {
+                // Remove the consultation item from DOM
+                $(button).closest('.consultation-item').fadeOut(300, function() {
+                    $(this).remove();
+                    
+                    // If no consultations left, reload page to show empty state
+                    if ($('.consultation-item').length === 0) {
+                        location.reload();
+                    }
+                });
+            } else {
+                alert('Không thể xóa consultation session: ' + (response.message || 'Lỗi không xác định'));
+                $(button).prop('disabled', false).html('🗑️');
+            }
+        },
+        error: function(xhr) {
+            const errorMsg = xhr.responseJSON?.message || 'Đã xảy ra lỗi khi xóa consultation session.';
+            alert(errorMsg);
+            $(button).prop('disabled', false).html('🗑️');
+        }
+    });
+}
+
 $(document).ready(function() {
     let sessionId = null;
     let disclaimerAcknowledged = false;
@@ -185,7 +248,7 @@ $(document).ready(function() {
                 addMessage(response.message, 'ai');
             },
             error: function() {
-                addMessage('Sorry, there was an error starting the session. Please refresh the page.', 'ai');
+                addMessage('Xin lỗi, đã có lỗi khi bắt đầu phiên. Vui lòng làm mới trang.', 'ai');
             }
         });
     }
@@ -195,7 +258,7 @@ $(document).ready(function() {
         e.preventDefault();
         
         if (!disclaimerAcknowledged) {
-            alert('Please acknowledge the medical disclaimer first.');
+            alert('Vui lòng xác nhận tuyên bố từ chối trách nhiệm y tế trước.');
             return;
         }
 
@@ -208,7 +271,7 @@ $(document).ready(function() {
         $('#send-btn').prop('disabled', true);
 
         // Show typing indicator
-        const typingId = addMessage('Thinking...', 'ai', true);
+        const typingId = addMessage('Đang suy nghĩ...', 'ai', true);
 
         // Send to server
         $.ajax({
@@ -229,7 +292,7 @@ $(document).ready(function() {
                 // Add AI response with specialists if available
                 let responseText = response.response;
                 if (response.suggested_specialists && response.suggested_specialists.length > 0) {
-                    responseText += '\n\n**Suggested Specialists:**\n';
+                    responseText += '\n\n**Chuyên Khoa Đề Xuất:**\n';
                     response.suggested_specialists.forEach(function(spec) {
                         responseText += `• ${spec.charAt(0).toUpperCase() + spec.slice(1).replace('_', ' ')}\n`;
                     });
@@ -247,16 +310,16 @@ $(document).ready(function() {
             },
             error: function(xhr) {
                 $(`#msg-${typingId}`).remove();
-                let errorMessage = 'Sorry, there was an error processing your request. Please try again.';
+                let errorMessage = 'Xin lỗi, đã có lỗi khi xử lý yêu cầu của bạn. Vui lòng thử lại.';
                 
                 if (xhr.responseJSON && xhr.responseJSON.error) {
                     errorMessage = xhr.responseJSON.error;
                 } else if (xhr.responseJSON && xhr.responseJSON.message) {
                     errorMessage = xhr.responseJSON.message;
                 } else if (xhr.status === 422) {
-                    errorMessage = 'Validation error. Please check your input.';
+                    errorMessage = 'Lỗi xác thực. Vui lòng kiểm tra đầu vào của bạn.';
                 } else if (xhr.status === 500) {
-                    errorMessage = 'Server error. Please try again later.';
+                    errorMessage = 'Lỗi máy chủ. Vui lòng thử lại sau.';
                 }
                 
                 addMessage('❌ ' + errorMessage, 'ai');
@@ -327,8 +390,11 @@ $(document).ready(function() {
 
     // New chat button
     $('#new-chat-btn').click(function() {
-        if (confirm('Start a new conversation?')) {
+        if (confirm('Bắt đầu cuộc trò chuyện mới?')) {
             sessionId = null;
+            $('#chat-messages').html('');
+            $('#message-input, #send-btn').prop('disabled', !disclaimerAcknowledged);
+            $('#message-input').attr('placeholder', 'Nhập câu hỏi sức khỏe của bạn tại đây...');
             startSession();
         }
     });
@@ -348,6 +414,87 @@ $(document).ready(function() {
                 $('#chat-form').submit();
             }
         }
+    });
+
+    // Load consultation history when clicking on recent consultation
+    $('.consultation-item').click(function() {
+        const clickedSessionId = $(this).data('session-id');
+        const topic = $(this).data('topic');
+        
+        if (!clickedSessionId) return;
+        
+        // Show loading state
+        $('#chat-messages').html(`
+            <div class="flex items-center justify-center h-full">
+                <div class="text-center">
+                    <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-2"></div>
+                    <p class="text-sm text-gray-600">Đang tải lịch sử...</p>
+                </div>
+            </div>
+        `);
+        
+        // Load history
+        $.ajax({
+            url: '{{ route("ai-consultation.history", ":sessionId") }}'.replace(':sessionId', clickedSessionId),
+            method: 'GET',
+            headers: {
+                'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+            },
+            success: function(response) {
+                // Clear chat messages
+                $('#chat-messages').html('');
+                
+                // Set session ID to the clicked session
+                sessionId = clickedSessionId;
+                
+                // Display conversation history
+                if (response.conversation && response.conversation.length > 0) {
+                    response.conversation.forEach(function(msg) {
+                        // Add user message
+                        if (msg.user_message) {
+                            addMessage(msg.user_message, 'user');
+                        }
+                        // Add AI response
+                        if (msg.ai_response) {
+                            let responseText = msg.ai_response;
+                            if (msg.suggested_specialists && msg.suggested_specialists.length > 0) {
+                                responseText += '\n\n**Chuyên Khoa Đề Xuất:**\n';
+                                msg.suggested_specialists.forEach(function(spec) {
+                                    responseText += `• ${spec.charAt(0).toUpperCase() + spec.slice(1).replace('_', ' ')}\n`;
+                                });
+                            }
+                            const aiMessageId = addMessage(responseText, 'ai');
+                            
+                            // Highlight emergency level if high
+                            if (msg.emergency_level === 'critical' || msg.emergency_level === 'high') {
+                                $(`#msg-${aiMessageId}`).find('.bg-gray-100').addClass('border-2 border-red-300 bg-red-50');
+                            }
+                        }
+                    });
+                } else {
+                    addMessage('Không tìm thấy lịch sử cuộc trò chuyện.', 'ai');
+                }
+                
+                // Add history indicator at the top
+                $('#chat-messages').prepend(`
+                    <div class="bg-blue-50 border-l-4 border-blue-500 p-3 mb-4 rounded-r-lg">
+                        <p class="text-sm text-blue-800">
+                            <strong>📜 Đang xem lịch sử:</strong> ${topic}
+                        </p>
+                        <p class="text-xs text-blue-600 mt-1">Bấm nút "Cuộc trò chuyện mới" để bắt đầu cuộc trò chuyện mới</p>
+                    </div>
+                `);
+                
+                // Disable input since this is history view
+                $('#message-input, #send-btn').prop('disabled', true);
+                $('#message-input').attr('placeholder', 'Đây là lịch sử cuộc trò chuyện. Bắt đầu cuộc trò chuyện mới để tiếp tục.');
+            },
+            error: function(xhr) {
+                $('#chat-messages').html('');
+                addMessage('❌ Không thể tải lịch sử cuộc trò chuyện. Vui lòng thử lại.', 'ai');
+                console.error('Error loading history:', xhr.responseJSON || xhr.responseText);
+            }
+        });
     });
 });
 </script>

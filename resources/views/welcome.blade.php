@@ -6,20 +6,20 @@
         <div class="container mx-auto px-4">
             <div class="flex flex-col md:flex-row items-center">
                 <div class="md:w-1/2 mb-10 md:mb-0">
-                    <h1 class="text-4xl md:text-5xl font-bold mb-6 leading-tight">Personalized Health Consultations with AI</h1>
-                    <p class="text-xl mb-8">Get expert health advice tailored to your unique needs using our advanced AI technology.</p>
+                    <h1 class="text-4xl md:text-5xl font-bold mb-6 leading-tight">Tư Vấn Sức Khỏe Cá Nhân Hóa với AI</h1>
+                    <p class="text-xl mb-8">Nhận lời khuyên sức khỏe chuyên nghiệp được tùy chỉnh theo nhu cầu độc đáo của bạn bằng công nghệ AI tiên tiến của chúng tôi.</p>
                     <div class="flex space-x-4">
                         @auth
-                            <a href="#contact" class="bg-white text-blue-600 px-6 py-3 rounded-lg font-semibold hover:bg-blue-50 transition-colors duration-200">Get Started</a>
+                            <a href="#contact" class="bg-white text-blue-600 px-6 py-3 rounded-lg font-semibold hover:bg-blue-50 transition-colors duration-200">Bắt đầu</a>
                         @else
-                            <a href="{{ route('register') }}" class="bg-white text-blue-600 px-6 py-3 rounded-lg font-semibold hover:bg-blue-50 transition-colors duration-200">Get Started</a>
+                            <a href="{{ route('register') }}" class="bg-white text-blue-600 px-6 py-3 rounded-lg font-semibold hover:bg-blue-50 transition-colors duration-200">Bắt đầu</a>
                         @endauth
-                        <a href="#services" class="border-2 border-white text-white px-6 py-3 rounded-lg font-semibold hover:bg-white hover:text-blue-600 transition-colors duration-200">Learn More</a>
+                        <a href="#services" class="border-2 border-white text-white px-6 py-3 rounded-lg font-semibold hover:bg-white hover:text-blue-600 transition-colors duration-200">Tìm hiểu thêm</a>
                     </div>
                 </div>
                 <div class="md:w-1/2">
                     <div class="bg-white rounded-xl shadow-2xl overflow-hidden">
-                        <img src="https://image.pollinations.ai/prompt/modern%20healthcare%20dashboard%20with%20AI%20visualization%20professional%20medical%20technology%20clean%20minimalist/1200/800" alt="AI Health Dashboard" class="w-full h-auto">
+                        <img src="https://pub-07cce266cb7a4eff97bc6503d84b6470.r2.dev/unnamed.jpg" alt="HealthBot AI Assistant" class="w-full h-auto">
                     </div>
                 </div>
             </div>
@@ -30,8 +30,8 @@
     <section id="services" class="py-20 bg-white">
         <div class="container mx-auto px-4">
             <div class="text-center mb-16">
-                <h2 class="text-3xl font-bold text-gray-800 mb-4">Our AI-Powered Health Services</h2>
-                <p class="text-xl text-gray-600 max-w-3xl mx-auto">Revolutionary healthcare solutions tailored to your individual needs</p>
+                <h2 class="text-3xl font-bold text-gray-800 mb-4">Dịch Vụ Sức Khỏe Được Hỗ Trợ Bởi AI</h2>
+                <p class="text-xl text-gray-600 max-w-3xl mx-auto">Giải pháp chăm sóc sức khỏe cách mạng được tùy chỉnh theo nhu cầu cá nhân của bạn</p>
             </div>
 
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
@@ -43,13 +43,13 @@
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                             </svg>
                         </div>
-                        <h3 class="text-xl font-semibold text-gray-800 mb-3 text-center">Personalized Health Plans</h3>
-                        <p class="text-gray-600 mb-6">Our AI analyzes your health data to create a customized plan tailored to your unique needs and goals.</p>
+                        <h3 class="text-xl font-semibold text-gray-800 mb-3 text-center">Kế Hoạch Sức Khỏe Cá Nhân Hóa</h3>
+                        <p class="text-gray-600 mb-6">AI của chúng tôi phân tích dữ liệu sức khỏe của bạn để tạo một kế hoạch tùy chỉnh phù hợp với nhu cầu và mục tiêu độc đáo của bạn.</p>
                         <div class="text-center">
                             @auth
-                                <a href="{{ route('health-plans.index') }}" class="text-blue-600 font-medium hover:text-blue-800 transition-colors duration-200">Create Your Plan</a>
+                                <a href="{{ route('health-plans.index') }}" class="text-blue-600 font-medium hover:text-blue-800 transition-colors duration-200">Tạo Kế Hoạch</a>
                             @else
-                                <a href="{{ route('register') }}" class="text-blue-600 font-medium hover:text-blue-800 transition-colors duration-200">Get Started</a>
+                                <a href="{{ route('register') }}" class="text-blue-600 font-medium hover:text-blue-800 transition-colors duration-200">Bắt đầu</a>
                             @endauth
                         </div>
                     </div>
@@ -63,13 +63,13 @@
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
                             </svg>
                         </div>
-                        <h3 class="text-xl font-semibold text-gray-800 mb-3 text-center">Nutrition Consultations</h3>
-                        <p class="text-gray-600 mb-6">Our AI nutritionists create personalized meal plans based on your health goals, dietary preferences, and nutritional needs.</p>
+                        <h3 class="text-xl font-semibold text-gray-800 mb-3 text-center">Tư Vấn Dinh Dưỡng</h3>
+                        <p class="text-gray-600 mb-6">Các chuyên gia dinh dưỡng AI của chúng tôi tạo kế hoạch bữa ăn cá nhân hóa dựa trên mục tiêu sức khỏe, sở thích ăn uống và nhu cầu dinh dưỡng của bạn.</p>
                         <div class="text-center">
                             @auth
-                                <a href="{{ route('nutrition.index') }}" class="text-green-600 font-medium hover:text-green-800 transition-colors duration-200">Learn More</a>
+                                <a href="{{ route('nutrition.index') }}" class="text-green-600 font-medium hover:text-green-800 transition-colors duration-200">Tìm hiểu thêm</a>
                             @else
-                                <a href="{{ route('register') }}" class="text-green-600 font-medium hover:text-green-800 transition-colors duration-200">Get Started</a>
+                                <a href="{{ route('register') }}" class="text-green-600 font-medium hover:text-green-800 transition-colors duration-200">Bắt đầu</a>
                             @endauth
                         </div>
                     </div>
@@ -83,13 +83,13 @@
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
                             </svg>
                         </div>
-                        <h3 class="text-xl font-semibold text-gray-800 mb-3 text-center">AI Diagnostics</h3>
-                        <p class="text-gray-600 mb-6">Advanced AI algorithms analyze your symptoms and health data to provide accurate diagnoses and treatment recommendations.</p>
+                        <h3 class="text-xl font-semibold text-gray-800 mb-3 text-center">Chẩn Đoán AI</h3>
+                        <p class="text-gray-600 mb-6">Các thuật toán AI tiên tiến phân tích triệu chứng và dữ liệu sức khỏe của bạn để cung cấp chẩn đoán chính xác và khuyến nghị điều trị.</p>
                         <div class="text-center">
                             @auth
-                                <a href="{{ route('ai-consultation.index') }}" class="text-blue-600 font-medium hover:text-blue-800 transition-colors duration-200">Start Chat</a>
+                                <a href="{{ route('ai-consultation.index') }}" class="text-blue-600 font-medium hover:text-blue-800 transition-colors duration-200">Bắt đầu Chat</a>
                             @else
-                                <a href="{{ route('register') }}" class="text-blue-600 font-medium hover:text-blue-800 transition-colors duration-200">Get Started</a>
+                                <a href="{{ route('register') }}" class="text-blue-600 font-medium hover:text-blue-800 transition-colors duration-200">Bắt đầu</a>
                             @endauth
                         </div>
                     </div>
@@ -103,13 +103,13 @@
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
                             </svg>
                         </div>
-                        <h3 class="text-xl font-semibold text-gray-800 mb-3 text-center">Health Journal</h3>
-                        <p class="text-gray-600 mb-6">Track your daily health, symptoms, food, exercise, and mood with AI-powered insights and recommendations.</p>
+                        <h3 class="text-xl font-semibold text-gray-800 mb-3 text-center">Nhật Ký Sức Khỏe</h3>
+                        <p class="text-gray-600 mb-6">Theo dõi sức khỏe hàng ngày, triệu chứng, thức ăn, tập thể dục và tâm trạng của bạn với những hiểu biết và khuyến nghị được hỗ trợ bởi AI.</p>
                         <div class="text-center">
                             @auth
-                                <a href="{{ route('health-journal.index') }}" class="text-yellow-600 font-medium hover:text-yellow-800 transition-colors duration-200">Start Journal</a>
+                                <a href="{{ route('health-journal.index') }}" class="text-yellow-600 font-medium hover:text-yellow-800 transition-colors duration-200">Bắt đầu Nhật Ký</a>
                             @else
-                                <a href="{{ route('register') }}" class="text-yellow-600 font-medium hover:text-yellow-800 transition-colors duration-200">Get Started</a>
+                                <a href="{{ route('register') }}" class="text-yellow-600 font-medium hover:text-yellow-800 transition-colors duration-200">Bắt đầu</a>
                             @endauth
                         </div>
                     </div>
@@ -124,25 +124,25 @@
             <div class="flex flex-col md:flex-row items-center">
                 <div class="md:w-1/2 mb-10 md:mb-0">
                     <div class="bg-white rounded-xl shadow-2xl overflow-hidden">
-                        <img src="https://image.pollinations.ai/prompt/modern%20healthcare%20team%20collaboration%20professional%20medical%20technology%20clean%20minimalist/1200/800" alt="Healthcare Team" class="w-full h-auto">
+                        <img src="https://pub-07cce266cb7a4eff97bc6503d84b6470.r2.dev/unnamed.jpg" alt="HealthBot AI Assistant" class="w-full h-auto">
                     </div>
                 </div>
                 <div class="md:w-1/2 md:pl-12">
-                    <h2 class="text-3xl font-bold text-gray-800 mb-6">About AI HealthBot</h2>
-                    <p class="text-gray-600 mb-6">AI HealthBot is revolutionizing the healthcare industry with our advanced AI technology. Our team of experts combines cutting-edge artificial intelligence with medical knowledge to provide personalized health solutions that are tailored to your unique needs.</p>
-                    <p class="text-gray-600 mb-6">Founded in 2023, we've quickly become a leader in AI-powered healthcare solutions. Our mission is to make quality healthcare accessible to everyone, everywhere, through the power of artificial intelligence.</p>
+                    <h2 class="text-3xl font-bold text-gray-800 mb-6">Về AI HealthBot</h2>
+                    <p class="text-gray-600 mb-6">AI HealthBot đang cách mạng hóa ngành chăm sóc sức khỏe với công nghệ AI tiên tiến của chúng tôi. Đội ngũ chuyên gia của chúng tôi kết hợp trí tuệ nhân tạo tiên tiến với kiến thức y tế để cung cấp các giải pháp sức khỏe cá nhân hóa phù hợp với nhu cầu độc đáo của bạn.</p>
+                    <p class="text-gray-600 mb-6">Được thành lập vào năm 2023, chúng tôi đã nhanh chóng trở thành người dẫn đầu trong các giải pháp chăm sóc sức khỏe được hỗ trợ bởi AI. Sứ mệnh của chúng tôi là làm cho chăm sóc sức khỏe chất lượng có thể tiếp cận được với mọi người, ở mọi nơi, thông qua sức mạnh của trí tuệ nhân tạo.</p>
                     <div class="flex space-x-6">
                         <div>
                             <h3 class="text-2xl font-bold text-blue-600">100+</h3>
-                            <p class="text-gray-600">Happy Clients</p>
+                            <p class="text-gray-600">Khách hàng hài lòng</p>
                         </div>
                         <div>
                             <h3 class="text-2xl font-bold text-blue-600">50+</h3>
-                            <p class="text-gray-600">AI Models</p>
+                            <p class="text-gray-600">Mô hình AI</p>
                         </div>
                         <div>
                             <h3 class="text-2xl font-bold text-blue-600">98%</h3>
-                            <p class="text-gray-600">Accuracy Rate</p>
+                            <p class="text-gray-600">Tỷ lệ chính xác</p>
                         </div>
                     </div>
                 </div>
@@ -154,8 +154,8 @@
     <section id="testimonials" class="py-20 bg-gradient-to-br from-blue-50 to-indigo-50">
         <div class="container mx-auto px-4">
             <div class="text-center mb-16">
-                <h2 class="text-3xl font-bold text-gray-800 mb-4">What Our Clients Say</h2>
-                <p class="text-xl text-gray-600 max-w-3xl mx-auto">Hear from the people who have transformed their health with AI HealthBot</p>
+                <h2 class="text-3xl font-bold text-gray-800 mb-4">Khách Hàng Nói Gì Về Chúng Tôi</h2>
+                <p class="text-xl text-gray-600 max-w-3xl mx-auto">Lắng nghe từ những người đã thay đổi sức khỏe của họ với AI HealthBot</p>
             </div>
 
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
@@ -191,7 +191,7 @@
                 </div>
                 @empty
                 <div class="col-span-3 text-center py-12">
-                    <p class="text-gray-500">No testimonials available yet.</p>
+                    <p class="text-gray-500">Chưa có đánh giá nào.</p>
                 </div>
                 @endforelse
             </div>
@@ -202,8 +202,8 @@
     <section id="contact" class="py-20 bg-white">
         <div class="container mx-auto px-4">
             <div class="text-center mb-16">
-                <h2 class="text-3xl font-bold text-gray-800 mb-4">Get in Touch</h2>
-                <p class="text-xl text-gray-600 max-w-3xl mx-auto">Ready to transform your health with AI-powered solutions? Contact us today to schedule your consultation.</p>
+                <h2 class="text-3xl font-bold text-gray-800 mb-4">Liên Hệ Với Chúng Tôi</h2>
+                <p class="text-xl text-gray-600 max-w-3xl mx-auto">Sẵn sàng thay đổi sức khỏe của bạn với các giải pháp được hỗ trợ bởi AI? Liên hệ với chúng tôi ngay hôm nay để đặt lịch tư vấn.</p>
             </div>
 
             <div class="max-w-3xl mx-auto">
@@ -227,19 +227,19 @@
                     @csrf
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
                         <div>
-                            <label for="name" class="block text-gray-700 font-medium mb-2">Full Name <span class="text-red-500">*</span></label>
+                            <label for="name" class="block text-gray-700 font-medium mb-2">Họ và tên <span class="text-red-500">*</span></label>
                             <input type="text" id="name" name="name" value="{{ old('name') }}" required
                                    class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition duration-200 @error('name') border-red-500 @enderror" 
-                                   placeholder="Your name">
+                                   placeholder="Tên của bạn">
                             @error('name')
                                 <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
                             @enderror
                         </div>
                         <div>
-                            <label for="email" class="block text-gray-700 font-medium mb-2">Email Address <span class="text-red-500">*</span></label>
+                            <label for="email" class="block text-gray-700 font-medium mb-2">Địa chỉ email <span class="text-red-500">*</span></label>
                             <input type="email" id="email" name="email" value="{{ old('email') }}" required
                                    class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition duration-200 @error('email') border-red-500 @enderror" 
-                                   placeholder="Your email">
+                                   placeholder="Email của bạn">
                             @error('email')
                                 <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
                             @enderror
@@ -247,27 +247,27 @@
                     </div>
 
                     <div class="mb-6">
-                        <label for="subject" class="block text-gray-700 font-medium mb-2">Subject <span class="text-red-500">*</span></label>
+                        <label for="subject" class="block text-gray-700 font-medium mb-2">Chủ đề <span class="text-red-500">*</span></label>
                         <input type="text" id="subject" name="subject" value="{{ old('subject') }}" required
                                class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition duration-200 @error('subject') border-red-500 @enderror" 
-                               placeholder="How can we help you?">
+                               placeholder="Chúng tôi có thể giúp gì cho bạn?">
                         @error('subject')
                             <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
                         @enderror
                     </div>
 
                     <div class="mb-6">
-                        <label for="message" class="block text-gray-700 font-medium mb-2">Message <span class="text-red-500">*</span></label>
+                        <label for="message" class="block text-gray-700 font-medium mb-2">Tin nhắn <span class="text-red-500">*</span></label>
                         <textarea id="message" name="message" rows="5" required
                                   class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition duration-200 @error('message') border-red-500 @enderror" 
-                                  placeholder="Tell us about your health goals...">{{ old('message') }}</textarea>
+                                  placeholder="Hãy cho chúng tôi biết về mục tiêu sức khỏe của bạn...">{{ old('message') }}</textarea>
                         @error('message')
                             <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
                         @enderror
                     </div>
 
                     <div class="text-center">
-                        <button type="submit" class="bg-blue-600 text-white px-8 py-3 rounded-lg font-semibold hover:bg-blue-700 transition-colors duration-200">Send Message</button>
+                        <button type="submit" class="bg-blue-600 text-white px-8 py-3 rounded-lg font-semibold hover:bg-blue-700 transition-colors duration-200">Gửi tin nhắn</button>
                     </div>
                 </form>
             </div>
@@ -279,7 +279,7 @@
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
                         </svg>
                     </div>
-                    <h3 class="text-xl font-semibold text-gray-800 mb-2">Phone</h3>
+                    <h3 class="text-xl font-semibold text-gray-800 mb-2">Điện thoại</h3>
                     <p class="text-gray-600">(123) 456-7890</p>
                 </div>
 
@@ -300,8 +300,8 @@
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
                         </svg>
                     </div>
-                    <h3 class="text-xl font-semibold text-gray-800 mb-2">Address</h3>
-                    <p class="text-gray-600">123 Health Street, Wellness City, HC 10001</p>
+                    <h3 class="text-xl font-semibold text-gray-800 mb-2">Địa chỉ</h3>
+                    <p class="text-gray-600">123 Đường Sức Khỏe, Thành phố Sức Khỏe, HC 10001</p>
                 </div>
             </div>
         </div>

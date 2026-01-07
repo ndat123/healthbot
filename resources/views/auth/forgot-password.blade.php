@@ -12,10 +12,10 @@
                 </div>
             </div>
             <h2 class="mt-6 text-center text-3xl font-extrabold text-gray-900">
-                Forgot your password?
+                Quên mật khẩu?
             </h2>
             <p class="mt-2 text-center text-sm text-gray-600">
-                No worries! Enter your email address and we'll send you a link to reset your password.
+                Đừng lo! Nhập địa chỉ email của bạn và chúng tôi sẽ gửi cho bạn một liên kết để đặt lại mật khẩu.
             </p>
         </div>
         <form class="mt-8 space-y-6 bg-white rounded-xl shadow-lg p-8 border border-gray-100" action="{{ route('password.email') }}" method="POST">
@@ -38,12 +38,12 @@
             @endif
 
             <div>
-                <label for="email" class="block text-sm font-medium text-gray-700 mb-2">Email Address</label>
+                <label for="email" class="block text-sm font-medium text-gray-700 mb-2">Địa chỉ email</label>
                 <input id="email" name="email" type="email" autocomplete="email" required 
                        class="appearance-none relative block w-full px-3 py-3 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500 focus:z-10 sm:text-sm @error('email') border-red-500 @enderror" 
-                       placeholder="Enter your email address" value="{{ old('email') }}">
+                       placeholder="Nhập địa chỉ email" value="{{ old('email') }}">
                 <p class="mt-2 text-sm text-gray-500">
-                    We'll send a password reset link to this email address if it exists in our system.
+                    Chúng tôi sẽ gửi liên kết đặt lại mật khẩu đến địa chỉ email này nếu nó tồn tại trong hệ thống của chúng tôi.
                 </p>
             </div>
 
@@ -55,7 +55,7 @@
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
                         </svg>
                     </span>
-                    Send Password Reset Link
+                    Gửi Liên Kết Đặt Lại Mật Khẩu
                 </button>
             </div>
 
@@ -64,7 +64,7 @@
                     <svg class="inline-block h-4 w-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
                     </svg>
-                    Back to login
+                    Quay lại đăng nhập
                 </a>
             </div>
         </form>
