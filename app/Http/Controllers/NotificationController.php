@@ -52,6 +52,9 @@ class NotificationController extends Controller
         }
 
         $notification->markAsRead();
+        
+        // Clear cache
+        \Cache::forget("user.{$notification->user_id}.unread_notifications_count");
 
         return response()->json([
             'success' => true,
@@ -72,6 +75,9 @@ class NotificationController extends Controller
                 'is_read' => true,
                 'read_at' => now(),
             ]);
+        
+        // Clear cache
+        \Cache::forget("user.{$user->id}.unread_notifications_count");
 
         return response()->json([
             'success' => true,
@@ -89,7 +95,11 @@ class NotificationController extends Controller
             return response()->json(['error' => 'Unauthorized'], 403);
         }
 
+        $userId = $notification->user_id;
         $notification->delete();
+        
+        // Clear cache
+        \Cache::forget("user.{$userId}.unread_notifications_count");
 
         return response()->json([
             'success' => true,
@@ -105,6 +115,9 @@ class NotificationController extends Controller
         $user = Auth::user();
         
         Notification::where('user_id', $user->id)->delete();
+        
+        // Clear cache
+        \Cache::forget("user.{$user->id}.unread_notifications_count");
 
         return response()->json([
             'success' => true,
