@@ -19,6 +19,10 @@ return Application::configure(basePath: dirname(__DIR__))
             \Illuminate\Http\Request::HEADER_X_FORWARDED_PROTO |
             \Illuminate\Http\Request::HEADER_X_FORWARDED_AWS_ELB
         );
+
+        // Disable CSRF validation for all routes to avoid 419 errors on Railway
+        // (temporary workaround, not recommended for production security).
+        $middleware->validateCsrfTokens(except: ['*']);
         
         // Optimize middleware performance
         $middleware->statefulApi();
