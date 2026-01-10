@@ -106,7 +106,7 @@
             <div class="space-y-6">
                 <!-- Diagnosis Button -->
                 <div class="bg-white rounded-xl shadow-lg p-6">
-                    <a href="http://127.0.0.1:5000" target="_blank" 
+                    <a href="https://health-bot.up.railway.app/" target="_blank" 
                        class="block w-full bg-gradient-to-r from-red-600 to-pink-600 text-white px-6 py-4 rounded-lg hover:from-red-700 hover:to-pink-700 transition-colors font-semibold text-center shadow-md hover:shadow-lg">
                         <div class="flex items-center justify-center space-x-2">
                             <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
