@@ -165,7 +165,8 @@
                     <h2 class="text-xl font-bold text-gray-800 mb-4">Tư Vấn AI Gần Đây</h2>
                     <div class="space-y-3">
                         @forelse($consultations as $consultation)
-                            <div class="flex items-center justify-between border-l-4 border-purple-500 pl-3 py-2 group hover:bg-purple-50 rounded-r-lg transition-colors">
+                            <a href="{{ route('ai-consultation.index') }}?session={{ $consultation->session_id }}" 
+                               class="flex items-center justify-between border-l-4 border-purple-500 pl-3 py-2 group hover:bg-purple-50 rounded-r-lg transition-colors cursor-pointer">
                                 <div class="flex-1">
                                     <p class="text-sm font-medium text-gray-800">{{ $consultation->topic ?? 'Chung' }}</p>
                                     <p class="text-xs text-gray-500 mt-1">{{ \Illuminate\Support\Str::limit($consultation->user_message, 40) }}</p>
@@ -174,11 +175,11 @@
                                 <button type="button" 
                                         class="ml-2 p-1 text-red-500 hover:text-red-700 opacity-0 group-hover:opacity-100 transition-opacity delete-consultation-btn"
                                         data-session-id="{{ $consultation->session_id }}"
-                                        onclick="event.stopPropagation(); deleteConsultationFromDashboard('{{ $consultation->session_id }}', this);"
+                                        onclick="event.stopPropagation(); event.preventDefault(); deleteConsultationFromDashboard('{{ $consultation->session_id }}', this);"
                                         title="Xóa consultation">
                                     🗑️
                                 </button>
-                            </div>
+                            </a>
                         @empty
                             <p class="text-sm text-gray-500 text-center py-4">Chưa có tư vấn nào</p>
                         @endforelse

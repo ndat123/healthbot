@@ -6,12 +6,94 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
-use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Http;
+use Illuminate\Auth\Notifications\ResetPassword;
 
 class User extends Authenticatable
 {
     /** @use HasFactory<\Database\Factories\UserFactory> */
     use HasFactory, Notifiable;
+
+    /**
+     * Send the password reset notification.
+     *
+     * @param  string  $token
+     * @return void
+     */
+    public function sendPasswordResetNotification($token)
+    {
+        // Debug logging
+        \Log::info('sendPasswordResetNotification called for user: ' . $this->email);
+
+        // Generate the URL correctly. 
+        // Note: route('password.reset', ...) generates a full URL by default.
+        $url = route('password.reset', [
+            'token' => $token,
+            'email' => $this->getEmailForPasswordReset(),
+        ]);
+
+        \Log::info('Generated Password Reset URL: ' . $url);
+
+        try {
+            // Fallback: Use raw curl via exec to bypass PHP HttpClient limitations with Cloudflare
+            // This mimics the exact behavior of a command line curl request which is often less filtered
+            $to = escapeshellarg($this->getEmailForPasswordReset());
+            $subject = escapeshellarg('Đặt lại mật khẩu AI HealthBot');
+            $content = view('emails.password_reset', ['url' => $url])->render();
+            // Simplify content for curl to avoid shell escaping issues with complex HTML
+            // We'll base64 encode the body to safely pass it through shell
+            $content_encoded = base64_encode($content);
+            
+            // Construct the curl command
+            $cmd = "curl -X POST \"https://api.love4awalk.xyz/send-email\" ";
+            $cmd .= "-H \"Content-Type: application/json\" ";
+            $cmd .= "-H \"Accept: */*\" ";
+            $cmd .= "-H \"User-Agent: PostmanRuntime/7.36.0\" ";
+            $cmd .= "-H \"Connection: keep-alive\" ";
+            // Disable SSL verify because local environment often lacks proper CA certs
+            $cmd .= "-k "; 
+            
+            // Build JSON payload manually
+            $json_payload = json_encode([
+                'to' => $this->getEmailForPasswordReset(),
+                'subject' => 'Đặt lại mật khẩu AI HealthBot',
+                'html_content' => $content
+            ]);
+            
+            // Write payload to a temp file
+            $tempFile = tempnam(sys_get_temp_dir(), 'mail_');
+            file_put_contents($tempFile, $json_payload);
+            
+            $cmd .= "--data @" . $tempFile;
+            
+            \Log::info('Executing Curl Command: ' . $cmd);
+            exec($cmd, $output, $return_var);
+            
+            // Cleanup
+            unlink($tempFile);
+            
+            \Log::info('Curl Output: ' . implode("\n", $output));
+            \Log::info('Curl Return Var: ' . $return_var);
+            
+            if ($return_var !== 0) {
+                 \Log::error('Curl failed with code: ' . $return_var);
+            }
+
+            /*
+            // Log response
+            \Log::info('API Response Status: ' . $response->status());
+            \Log::info('API Response Body: ' . $response->body());
+
+            if (!$response->successful()) {
+                \Log::error('API Request failed with status: ' . $response->status());
+            }
+            */
+
+        } catch (\Exception $e) {
+            \Log::error('Failed to send password reset email via API: ' . $e->getMessage());
+            \Log::error($e->getTraceAsString());
+        }
+    }
 
     /**
      * The attributes that are mass assignable.

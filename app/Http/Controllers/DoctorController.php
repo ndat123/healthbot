@@ -19,7 +19,7 @@ class DoctorController extends Controller
         $user = Auth::user();
         
         // Get search and filter parameters
-        $search = $request->input('search', '');
+        $search = trim($request->input('search', ''));
         $specialization = $request->input('specialization', '');
         $availability = $request->input('availability', '');
         
@@ -27,13 +27,13 @@ class DoctorController extends Controller
         $query = Doctor::where('status', 'active')
             ->withCount('reviews');
         
-        // Search by name or specialization
+        // Search by name only
         if (!empty($search)) {
-            $query->where(function($q) use ($search) {
-                $q->where('name', 'LIKE', '%' . $search . '%')
-                  ->orWhere('specialization', 'LIKE', '%' . $search . '%')
-                  ->orWhere('bio', 'LIKE', '%' . $search . '%');
-            });
+            // Escape special LIKE characters
+            $escapedSearch = str_replace(['%', '_'], ['\%', '\_'], $search);
+            $searchTerm = '%' . $escapedSearch . '%';
+            
+            $query->where('name', 'LIKE', $searchTerm);
         }
         
         // Filter by specialization
@@ -367,6 +367,227 @@ class DoctorController extends Controller
         DoctorMessage::where('user_id', $user->id)
             ->where('doctor_id', $id)
             ->where('sender_type', 'doctor')
+            ->where('id', '>', $lastMessageId)
+            ->where('is_read', false)
+            ->update([
+                'is_read' => true,
+                'read_at' => now(),
+            ]);
+
+        return response()->json([
+            'success' => true,
+            'messages' => $messages,
+        ]);
+    }
+
+    /**
+     * Show conversations list for doctor
+     */
+    public function conversations()
+    {
+        $doctor = Auth::user();
+        
+        // Check if user is a doctor
+        if ($doctor->role !== 'doctor') {
+            abort(403, 'Chỉ có bác sĩ mới có thể truy cập trang này.');
+        }
+        
+        // Get doctor record by email
+        $doctorRecord = Doctor::where('email', $doctor->email)->first();
+        
+        if (!$doctorRecord) {
+            abort(404, 'Không tìm thấy hồ sơ bác sĩ.');
+        }
+
+        // Get all unique users who have conversations with this doctor
+        $conversations = DoctorMessage::where('doctor_id', $doctorRecord->id)
+            ->with('user')
+            ->select('user_id')
+            ->distinct()
+            ->get()
+            ->map(function ($message) use ($doctorRecord) {
+                $user = $message->user;
+                if (!$user) return null;
+                
+                // Get last message
+                $lastMessage = DoctorMessage::where('doctor_id', $doctorRecord->id)
+                    ->where('user_id', $user->id)
+                    ->latest()
+                    ->first();
+                
+                // Count unread messages from user
+                $unreadCount = DoctorMessage::where('doctor_id', $doctorRecord->id)
+                    ->where('user_id', $user->id)
+                    ->where('sender_type', 'user')
+                    ->where('is_read', false)
+                    ->count();
+                
+                return [
+                    'user_id' => $user->id,
+                    'user_name' => $user->name,
+                    'user_email' => $user->email,
+                    'last_message' => $lastMessage ? $lastMessage->message : null,
+                    'last_message_time' => $lastMessage ? $lastMessage->created_at : null,
+                    'unread_count' => $unreadCount,
+                ];
+            })
+            ->filter()
+            ->sortByDesc('last_message_time')
+            ->values();
+
+        return view('doctor.conversations', [
+            'doctor' => $doctorRecord,
+            'conversations' => $conversations,
+        ]);
+    }
+
+    /**
+     * Show chat interface with specific user (for doctor)
+     */
+    public function conversationWithUser($userId)
+    {
+        $doctor = Auth::user();
+        
+        // Check if user is a doctor
+        if ($doctor->role !== 'doctor') {
+            abort(403, 'Chỉ có bác sĩ mới có thể truy cập trang này.');
+        }
+        
+        // Get doctor record by email
+        $doctorRecord = Doctor::where('email', $doctor->email)->first();
+        
+        if (!$doctorRecord) {
+            abort(404, 'Không tìm thấy hồ sơ bác sĩ.');
+        }
+
+        // Get user
+        $user = \App\Models\User::findOrFail($userId);
+        
+        // Get conversation messages
+        $messages = DoctorMessage::where('doctor_id', $doctorRecord->id)
+            ->where('user_id', $userId)
+            ->orderBy('created_at', 'asc')
+            ->get();
+
+        // Mark user messages as read
+        DoctorMessage::where('doctor_id', $doctorRecord->id)
+            ->where('user_id', $userId)
+            ->where('sender_type', 'user')
+            ->where('is_read', false)
+            ->update([
+                'is_read' => true,
+                'read_at' => now(),
+            ]);
+
+        return view('doctor.conversation', compact('doctorRecord', 'user', 'messages'));
+    }
+
+    /**
+     * Send message to user (from doctor)
+     */
+    public function sendMessageToUser(Request $request, $userId)
+    {
+        $doctor = Auth::user();
+        
+        // Check if user is a doctor
+        if ($doctor->role !== 'doctor') {
+            return response()->json([
+                'success' => false,
+                'error' => 'Chỉ có bác sĩ mới có thể gửi tin nhắn.',
+            ], 403);
+        }
+        
+        // Get doctor record by email
+        $doctorRecord = Doctor::where('email', $doctor->email)->first();
+        
+        if (!$doctorRecord) {
+            return response()->json([
+                'success' => false,
+                'error' => 'Không tìm thấy hồ sơ bác sĩ.',
+            ], 404);
+        }
+
+        $validator = Validator::make($request->all(), [
+            'message' => 'required|string|max:2000',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'success' => false,
+                'error' => 'Message is required and must be less than 2000 characters.',
+            ], 422);
+        }
+
+        // Verify user exists
+        $user = \App\Models\User::findOrFail($userId);
+
+        // Create message
+        $message = DoctorMessage::create([
+            'user_id' => $userId,
+            'doctor_id' => $doctorRecord->id,
+            'message' => $request->message,
+            'sender_type' => 'doctor',
+            'is_read' => false,
+        ]);
+
+        return response()->json([
+            'success' => true,
+            'message' => [
+                'id' => $message->id,
+                'message' => $message->message,
+                'sender_type' => $message->sender_type,
+                'created_at' => $message->created_at->format('Y-m-d H:i:s'),
+                'formatted_time' => $message->created_at->format('g:i A'),
+            ],
+        ]);
+    }
+
+    /**
+     * Get new messages from user (for polling)
+     */
+    public function getMessagesFromUser(Request $request, $userId)
+    {
+        $doctor = Auth::user();
+        
+        // Check if user is a doctor
+        if ($doctor->role !== 'doctor') {
+            return response()->json([
+                'success' => false,
+                'error' => 'Chỉ có bác sĩ mới có thể truy cập.',
+            ], 403);
+        }
+        
+        // Get doctor record by email
+        $doctorRecord = Doctor::where('email', $doctor->email)->first();
+        
+        if (!$doctorRecord) {
+            return response()->json([
+                'success' => false,
+                'error' => 'Không tìm thấy hồ sơ bác sĩ.',
+            ], 404);
+        }
+
+        $lastMessageId = $request->input('last_message_id', 0);
+
+        $messages = DoctorMessage::where('doctor_id', $doctorRecord->id)
+            ->where('user_id', $userId)
+            ->where('id', '>', $lastMessageId)
+            ->orderBy('created_at', 'asc')
+            ->get()
+            ->map(function ($message) {
+                return [
+                    'id' => $message->id,
+                    'message' => $message->message,
+                    'sender_type' => $message->sender_type,
+                    'created_at' => $message->created_at->format('Y-m-d H:i:s'),
+                    'formatted_time' => $message->created_at->format('g:i A'),
+                ];
+            });
+
+        // Mark new user messages as read
+        DoctorMessage::where('doctor_id', $doctorRecord->id)
+            ->where('user_id', $userId)
+            ->where('sender_type', 'user')
             ->where('id', '>', $lastMessageId)
             ->where('is_read', false)
             ->update([

@@ -2,14 +2,14 @@
 
 @section('content')
 <div class="container mx-auto px-4 py-8">
-    <h1 class="text-3xl font-bold text-gray-800 mb-8">Admin Dashboard</h1>
+    <h1 class="text-3xl font-bold text-gray-800 mb-8">Bảng Điều Khiển Quản Trị</h1>
 
     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
         <!-- User Statistics Card -->
         <div class="bg-white rounded-2xl shadow-xl p-6 border border-gray-100 hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-1">
             <div class="flex items-center justify-between">
                 <div>
-                    <h3 class="text-gray-500 text-sm font-medium uppercase tracking-wide">Total Users</h3>
+                    <h3 class="text-gray-500 text-sm font-medium uppercase tracking-wide">Tổng Người Dùng</h3>
                     <p class="text-3xl font-bold text-gray-900 mt-1">{{ $stats['users'] }}</p>
                 </div>
                 <div class="bg-blue-100 p-3 rounded-xl">
@@ -20,7 +20,7 @@
             </div>
             <div class="mt-4">
                 <div class="flex justify-between text-sm">
-                    <span class="text-gray-600">Active</span>
+                    <span class="text-gray-600">Đang hoạt động</span>
                     <span class="font-medium text-gray-900">{{ $stats['active_users'] ?? 0 }}</span>
                 </div>
                 <div class="w-full bg-gray-200 rounded-full h-2 mt-2">
@@ -36,7 +36,7 @@
         <div class="bg-white rounded-2xl shadow-xl p-6 border border-gray-100 hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-1">
             <div class="flex items-center justify-between">
                 <div>
-                    <h3 class="text-gray-500 text-sm font-medium uppercase tracking-wide">AI Sessions</h3>
+                    <h3 class="text-gray-500 text-sm font-medium uppercase tracking-wide">Phiên AI</h3>
                     <p class="text-3xl font-bold text-gray-900 mt-1">{{ $stats['ai_sessions'] }}</p>
                 </div>
                 <div class="bg-purple-100 p-3 rounded-xl">
@@ -47,8 +47,8 @@
             </div>
             <div class="mt-4">
                 <div class="flex justify-between text-sm">
-                    <span class="text-gray-600">Avg. Duration</span>
-                    <span class="font-medium text-gray-900">{{ $stats['avg_duration'] ?? '0:00' }} min</span>
+                    <span class="text-gray-600">Thời lượng TB</span>
+                    <span class="font-medium text-gray-900">{{ $stats['avg_duration'] ?? '0:00' }} phút</span>
                 </div>
                 <div class="w-full bg-gray-200 rounded-full h-2 mt-2">
                     <div class="bg-purple-600 h-2 rounded-full" style="width: 65%"></div>
@@ -60,7 +60,7 @@
         <div class="bg-white rounded-2xl shadow-xl p-6 border border-gray-100 hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-1">
             <div class="flex items-center justify-between">
                 <div>
-                    <h3 class="text-gray-500 text-sm font-medium uppercase tracking-wide">AI Performance</h3>
+                    <h3 class="text-gray-500 text-sm font-medium uppercase tracking-wide">Hiệu Suất AI</h3>
                     <p class="text-3xl font-bold text-gray-900 mt-1">{{ $stats['ai_performance']['accuracy'] }}%</p>
                 </div>
                 <div class="bg-green-100 p-3 rounded-xl">
@@ -71,7 +71,7 @@
             </div>
             <div class="mt-4">
                 <div class="flex justify-between text-sm">
-                    <span class="text-gray-600">Response Time</span>
+                    <span class="text-gray-600">Thời gian phản hồi</span>
                     <span class="font-medium text-gray-900">{{ $stats['ai_performance']['response_time'] }}s</span>
                 </div>
                 <div class="w-full bg-gray-200 rounded-full h-2 mt-2">
@@ -84,7 +84,7 @@
         <div class="bg-white rounded-2xl shadow-xl p-6 border border-gray-100 hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-1">
             <div class="flex items-center justify-between">
                 <div>
-                    <h3 class="text-gray-500 text-sm font-medium uppercase tracking-wide">User Satisfaction</h3>
+                    <h3 class="text-gray-500 text-sm font-medium uppercase tracking-wide">Sự Hài Lòng Người Dùng</h3>
                     <div class="flex items-center mt-1">
                         <p class="text-3xl font-bold text-gray-900">{{ $stats['ai_performance']['user_satisfaction'] }}</p>
                         <span class="ml-1 text-xl text-yellow-500">★</span>
@@ -98,7 +98,7 @@
             </div>
             <div class="mt-4">
                 <div class="flex justify-between text-sm">
-                    <span class="text-gray-600">Feedback</span>
+                    <span class="text-gray-600">Phản hồi</span>
                     <span class="font-medium text-gray-900">92%</span>
                 </div>
                 <div class="w-full bg-gray-200 rounded-full h-2 mt-2">
@@ -111,7 +111,7 @@
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <!-- Popular Health Topics -->
         <div class="bg-white rounded-2xl shadow-xl p-6 border border-gray-100 hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-1">
-            <h3 class="text-xl font-semibold text-gray-800 mb-4">Popular Health Topics</h3>
+            <h3 class="text-xl font-semibold text-gray-800 mb-4">Chủ Đề Sức Khỏe Phổ Biến</h3>
             <div class="space-y-4">
                 @foreach($stats['popular_topics'] as $topic)
                     <div class="flex items-center justify-between">
@@ -119,7 +119,7 @@
                             <span class="text-blue-600 mr-3 text-lg">•</span>
                             <span class="text-gray-700 font-medium">{{ $topic['name'] }}</span>
                         </div>
-                        <span class="text-gray-500 text-sm">{{ $topic['count'] }} searches</span>
+                        <span class="text-gray-500 text-sm">{{ $topic['count'] }} lượt tìm kiếm</span>
                     </div>
                 @endforeach
             </div>
@@ -127,70 +127,70 @@
 
         <!-- Health Trend Analysis -->
         <div class="bg-white rounded-2xl shadow-xl p-6 border border-gray-100 hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-1">
-            <h3 class="text-xl font-semibold text-gray-800 mb-4">Health Trend Analysis</h3>
+            <h3 class="text-xl font-semibold text-gray-800 mb-4">Phân Tích Xu Hướng Sức Khỏe</h3>
             <div class="space-y-4">
                 <div class="flex items-center justify-between">
                     <div class="flex items-center">
                         <span class="text-green-600 mr-3 text-lg">↑</span>
-                        <span class="text-gray-700 font-medium">Flu Cases</span>
+                        <span class="text-gray-700 font-medium">Ca Cảm Cúm</span>
                     </div>
-                    <span class="text-gray-500 text-sm">+15% last month</span>
+                    <span class="text-gray-500 text-sm">+15% tháng trước</span>
                 </div>
                 <div class="flex items-center justify-between">
                     <div class="flex items-center">
                         <span class="text-green-600 mr-3 text-lg">↑</span>
-                        <span class="text-gray-700 font-medium">Mental Health Awareness</span>
+                        <span class="text-gray-700 font-medium">Nhận Thức Sức Khỏe Tâm Thần</span>
                     </div>
-                    <span class="text-gray-500 text-sm">+22% last quarter</span>
+                    <span class="text-gray-500 text-sm">+22% quý trước</span>
                 </div>
                 <div class="flex items-center justify-between">
                     <div class="flex items-center">
                         <span class="text-red-600 mr-3 text-lg">↓</span>
-                        <span class="text-gray-700 font-medium">Smoking Rates</span>
+                        <span class="text-gray-700 font-medium">Tỷ Lệ Hút Thuốc</span>
                     </div>
-                    <span class="text-gray-500 text-sm">-8% last year</span>
+                    <span class="text-gray-500 text-sm">-8% năm trước</span>
                 </div>
                 <div class="flex items-center justify-between">
                     <div class="flex items-center">
                         <span class="text-green-600 mr-3 text-lg">↑</span>
-                        <span class="text-gray-700 font-medium">Exercise Adoption</span>
+                        <span class="text-gray-700 font-medium">Áp Dụng Tập Thể Dục</span>
                     </div>
-                    <span class="text-gray-500 text-sm">+18% last year</span>
+                    <span class="text-gray-500 text-sm">+18% năm trước</span>
                 </div>
             </div>
         </div>
 
         <!-- AI Consultation Performance -->
         <div class="bg-white rounded-2xl shadow-xl p-6 border border-gray-100 hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-1">
-            <h3 class="text-xl font-semibold text-gray-800 mb-4">AI Consultation Performance</h3>
+            <h3 class="text-xl font-semibold text-gray-800 mb-4">Hiệu Suất Tư Vấn AI</h3>
             <div class="space-y-4">
                 <div class="flex items-center justify-between">
                     <div class="flex items-center">
                         <span class="text-blue-600 mr-3 text-lg">✓</span>
-                        <span class="text-gray-700 font-medium">Accuracy</span>
+                        <span class="text-gray-700 font-medium">Độ chính xác</span>
                     </div>
                     <span class="text-gray-500 text-sm">{{ $stats['ai_performance']['accuracy'] }}%</span>
                 </div>
                 <div class="flex items-center justify-between">
                     <div class="flex items-center">
                         <span class="text-blue-600 mr-3 text-lg">✓</span>
-                        <span class="text-gray-700 font-medium">Response Time</span>
+                        <span class="text-gray-700 font-medium">Thời gian phản hồi</span>
                     </div>
                     <span class="text-gray-500 text-sm">{{ $stats['ai_performance']['response_time'] }}s</span>
                 </div>
                 <div class="flex items-center justify-between">
                     <div class="flex items-center">
                         <span class="text-blue-600 mr-3 text-lg">✓</span>
-                        <span class="text-gray-700 font-medium">User Satisfaction</span>
+                        <span class="text-gray-700 font-medium">Sự hài lòng người dùng</span>
                     </div>
                     <span class="text-gray-500 text-sm">{{ $stats['ai_performance']['user_satisfaction'] }}★</span>
                 </div>
                 <div class="flex items-center justify-between">
                     <div class="flex items-center">
                         <span class="text-blue-600 mr-3 text-lg">✓</span>
-                        <span class="text-gray-700 font-medium">Emergency Alerts</span>
+                        <span class="text-gray-700 font-medium">Cảnh báo khẩn cấp</span>
                     </div>
-                    <span class="text-gray-500 text-sm">98% accurate</span>
+                    <span class="text-gray-500 text-sm">98% chính xác</span>
                 </div>
             </div>
         </div>

@@ -2,14 +2,14 @@
 
 @section('content')
 <div class="container mx-auto px-4 py-8">
-    <h1 class="text-3xl font-bold text-gray-800 mb-8">Analytics & Reports</h1>
+    <h1 class="text-3xl font-bold text-gray-800 mb-8">Phân Tích & Báo Cáo</h1>
 
     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
         <!-- Total Users Card -->
         <div class="bg-white rounded-2xl shadow-xl p-6 border border-gray-100 hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-1">
             <div class="flex items-center justify-between">
                 <div>
-                    <h3 class="text-gray-500 text-sm font-medium uppercase tracking-wide">Total Users</h3>
+                    <h3 class="text-gray-500 text-sm font-medium uppercase tracking-wide">Tổng Người Dùng</h3>
                     <p class="text-3xl font-bold text-gray-900 mt-1">{{ $analytics['user_stats']['total'] }}</p>
                 </div>
                 <div class="bg-blue-100 p-3 rounded-xl">
@@ -20,7 +20,7 @@
             </div>
             <div class="mt-4">
                 <div class="flex justify-between text-sm">
-                    <span class="text-gray-600">Active</span>
+                    <span class="text-gray-600">Hoạt động</span>
                     <span class="font-medium text-gray-900">{{ $analytics['user_stats']['active'] }}</span>
                 </div>
                 <div class="w-full bg-gray-200 rounded-full h-2 mt-2">
@@ -33,7 +33,7 @@
         <div class="bg-white rounded-2xl shadow-xl p-6 border border-gray-100 hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-1">
             <div class="flex items-center justify-between">
                 <div>
-                    <h3 class="text-gray-500 text-sm font-medium uppercase tracking-wide">AI Sessions</h3>
+                    <h3 class="text-gray-500 text-sm font-medium uppercase tracking-wide">Phiên AI</h3>
                     <p class="text-3xl font-bold text-gray-900 mt-1">{{ $analytics['ai_sessions']['total'] }}</p>
                 </div>
                 <div class="bg-purple-100 p-3 rounded-xl">
@@ -44,7 +44,7 @@
             </div>
             <div class="mt-4">
                 <div class="flex justify-between text-sm">
-                    <span class="text-gray-600">Avg. Duration</span>
+                    <span class="text-gray-600">Thời lượng TB</span>
                     <span class="font-medium text-gray-900">{{ $analytics['ai_sessions']['average_duration'] }}</span>
                 </div>
                 <div class="w-full bg-gray-200 rounded-full h-2 mt-2">
@@ -57,7 +57,7 @@
         <div class="bg-white rounded-2xl shadow-xl p-6 border border-gray-100 hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-1">
             <div class="flex items-center justify-between">
                 <div>
-                    <h3 class="text-gray-500 text-sm font-medium uppercase tracking-wide">Premium Users</h3>
+                    <h3 class="text-gray-500 text-sm font-medium uppercase tracking-wide">Người Dùng Premium</h3>
                     <p class="text-3xl font-bold text-gray-900 mt-1">{{ $analytics['user_stats']['premium'] }}</p>
                 </div>
                 <div class="bg-green-100 p-3 rounded-xl">
@@ -68,7 +68,7 @@
             </div>
             <div class="mt-4">
                 <div class="flex justify-between text-sm">
-                    <span class="text-gray-600">Conversion Rate</span>
+                    <span class="text-gray-600">Tỷ lệ chuyển đổi</span>
                     <span class="font-medium text-gray-900">{{ $analytics['user_stats']['conversion_rate'] ?? 0 }}%</span>
                 </div>
                 <div class="w-full bg-gray-200 rounded-full h-2 mt-2">
@@ -84,7 +84,7 @@
         <div class="bg-white rounded-2xl shadow-xl p-6 border border-gray-100 hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-1">
             <div class="flex items-center justify-between">
                 <div>
-                    <h3 class="text-gray-500 text-sm font-medium uppercase tracking-wide">Doctors</h3>
+                    <h3 class="text-gray-500 text-sm font-medium uppercase tracking-wide">Bác Sĩ</h3>
                     <p class="text-3xl font-bold text-gray-900 mt-1">{{ $analytics['user_stats']['doctors'] }}</p>
                 </div>
                 <div class="bg-yellow-100 p-3 rounded-xl">
@@ -95,7 +95,7 @@
             </div>
             <div class="mt-4">
                 <div class="flex justify-between text-sm">
-                    <span class="text-gray-600">Active</span>
+                    <span class="text-gray-600">Hoạt động</span>
                     <span class="font-medium text-gray-900">{{ $analytics['user_stats']['active_doctors'] ?? 0 }}</span>
                 </div>
                 <div class="w-full bg-gray-200 rounded-full h-2 mt-2">
@@ -114,19 +114,19 @@
         <!-- User Growth Chart -->
         <div class="bg-white rounded-2xl shadow-xl p-6 border border-gray-100 hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-1 col-span-2">
             <div class="flex justify-between items-center mb-4">
-                <h2 class="text-xl font-semibold text-gray-800">User Growth</h2>
+                <h2 class="text-xl font-semibold text-gray-800">Tăng Trưởng Người Dùng</h2>
                 <div class="flex space-x-2">
                     <button onclick="loadUserGrowth('week')" 
                             class="px-3 py-1 text-sm font-medium rounded-md transition duration-300 {{ ($analytics['current_period'] ?? 'year') == 'week' ? 'text-blue-700 bg-blue-100' : 'text-gray-700 bg-gray-100 hover:bg-gray-200' }}">
-                        Week
+                        Tuần
                     </button>
                     <button onclick="loadUserGrowth('month')" 
                             class="px-3 py-1 text-sm font-medium rounded-md transition duration-300 {{ ($analytics['current_period'] ?? 'year') == 'month' ? 'text-blue-700 bg-blue-100' : 'text-gray-700 bg-gray-100 hover:bg-gray-200' }}">
-                        Month
+                        Tháng
                     </button>
                     <button onclick="loadUserGrowth('year')" 
                             class="px-3 py-1 text-sm font-medium rounded-md transition duration-300 {{ ($analytics['current_period'] ?? 'year') == 'year' ? 'text-blue-700 bg-blue-100' : 'text-gray-700 bg-gray-100 hover:bg-gray-200' }}">
-                        Year
+                        Năm
                     </button>
                 </div>
             </div>
@@ -137,7 +137,7 @@
 
         <!-- Common Health Issues -->
         <div class="bg-white rounded-2xl shadow-xl p-6 border border-gray-100 hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-1">
-            <h2 class="text-xl font-semibold text-gray-800 mb-4">Common Health Issues</h2>
+            <h2 class="text-xl font-semibold text-gray-800 mb-4">Vấn Đề Sức Khỏe Phổ Biến</h2>
             <div class="space-y-4">
                 @forelse($analytics['ai_sessions']['common_issues'] as $issue)
                     <div class="flex items-center justify-between">
@@ -145,11 +145,11 @@
                             <span class="text-blue-600 mr-3 text-lg">•</span>
                             <span class="text-gray-700 font-medium">{{ $issue['issue'] }}</span>
                         </div>
-                        <span class="text-gray-500 text-sm">{{ $issue['count'] }} sessions</span>
+                        <span class="text-gray-500 text-sm">{{ $issue['count'] }} phiên</span>
                     </div>
                 @empty
                     <div class="text-center text-gray-500 text-sm py-4">
-                        No common issues data available yet.
+                        Chưa có dữ liệu vấn đề phổ biến.
                     </div>
                 @endforelse
             </div>
@@ -159,7 +159,7 @@
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
         <!-- Health Trend Analysis -->
         <div class="bg-white rounded-2xl shadow-xl p-6 border border-gray-100 hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-1">
-            <h2 class="text-xl font-semibold text-gray-800 mb-4">Health Trend Analysis</h2>
+            <h2 class="text-xl font-semibold text-gray-800 mb-4">Phân Tích Xu Hướng Sức Khỏe</h2>
             <div class="space-y-4">
                 @forelse($analytics['health_trends'] as $trend)
                     <div class="p-4 border border-gray-100 rounded-xl hover:bg-gray-50 transition duration-150">
@@ -171,7 +171,7 @@
                     </div>
                 @empty
                     <div class="p-4 border border-gray-100 rounded-xl text-center text-gray-500">
-                        No trends data available yet.
+                        Chưa có dữ liệu xu hướng.
                     </div>
                 @endforelse
             </div>
@@ -179,68 +179,68 @@
 
         <!-- AI Performance -->
         <div class="bg-white rounded-2xl shadow-xl p-6 border border-gray-100 hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-1">
-            <h2 class="text-xl font-semibold text-gray-800 mb-4">AI Performance</h2>
+            <h2 class="text-xl font-semibold text-gray-800 mb-4">Hiệu Suất AI</h2>
             <div class="space-y-4">
                 <div class="flex items-center justify-between">
                     <div class="flex items-center">
                         <span class="text-blue-600 mr-3 text-lg">✓</span>
-                        <span class="text-gray-700 font-medium">Accuracy</span>
+                        <span class="text-gray-700 font-medium">Độ chính xác</span>
                     </div>
                     <span class="text-gray-500 text-sm">{{ $analytics['ai_performance']['accuracy'] ?? 0 }}%</span>
                 </div>
                 <div class="flex items-center justify-between">
                     <div class="flex items-center">
                         <span class="text-blue-600 mr-3 text-lg">✓</span>
-                        <span class="text-gray-700 font-medium">Response Time</span>
+                        <span class="text-gray-700 font-medium">Thời gian phản hồi</span>
                     </div>
                     <span class="text-gray-500 text-sm">{{ $analytics['ai_performance']['response_time'] ?? 0 }}s</span>
                 </div>
                 <div class="flex items-center justify-between">
                     <div class="flex items-center">
                         <span class="text-blue-600 mr-3 text-lg">✓</span>
-                        <span class="text-gray-700 font-medium">User Satisfaction</span>
+                        <span class="text-gray-700 font-medium">Sự hài lòng người dùng</span>
                     </div>
                     <span class="text-gray-500 text-sm">{{ $analytics['ai_performance']['user_satisfaction'] ?? 0 }}★</span>
                 </div>
                 <div class="flex items-center justify-between">
                     <div class="flex items-center">
                         <span class="text-blue-600 mr-3 text-lg">✓</span>
-                        <span class="text-gray-700 font-medium">Emergency Alerts</span>
+                        <span class="text-gray-700 font-medium">Cảnh báo khẩn cấp</span>
                     </div>
-                    <span class="text-gray-500 text-sm">{{ $analytics['ai_performance']['emergency_alerts_accuracy'] ?? 0 }}% accurate</span>
+                    <span class="text-gray-500 text-sm">{{ $analytics['ai_performance']['emergency_alerts_accuracy'] ?? 0 }}% chính xác</span>
                 </div>
             </div>
         </div>
 
         <!-- User Demographics -->
         <div class="bg-white rounded-2xl shadow-xl p-6 border border-gray-100 hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-1">
-            <h2 class="text-xl font-semibold text-gray-800 mb-4">User Demographics</h2>
+            <h2 class="text-xl font-semibold text-gray-800 mb-4">Nhân Khẩu Học Người Dùng</h2>
             <div class="space-y-4">
                 <div class="flex items-center justify-between">
                     <div class="flex items-center">
                         <span class="text-blue-600 mr-3 text-lg">•</span>
-                        <span class="text-gray-700 font-medium">Age 18-34</span>
+                        <span class="text-gray-700 font-medium">Tuổi 18-34</span>
                     </div>
                     <span class="text-gray-500 text-sm">{{ $analytics['demographics']['age_distribution']['18-34'] ?? 0 }}%</span>
                 </div>
                 <div class="flex items-center justify-between">
                     <div class="flex items-center">
                         <span class="text-blue-600 mr-3 text-lg">•</span>
-                        <span class="text-gray-700 font-medium">Age 35-54</span>
+                        <span class="text-gray-700 font-medium">Tuổi 35-54</span>
                     </div>
                     <span class="text-gray-500 text-sm">{{ $analytics['demographics']['age_distribution']['35-54'] ?? 0 }}%</span>
                 </div>
                 <div class="flex items-center justify-between">
                     <div class="flex items-center">
                         <span class="text-blue-600 mr-3 text-lg">•</span>
-                        <span class="text-gray-700 font-medium">Age 55+</span>
+                        <span class="text-gray-700 font-medium">Tuổi 55+</span>
                     </div>
                     <span class="text-gray-500 text-sm">{{ $analytics['demographics']['age_distribution']['55+'] ?? 0 }}%</span>
                 </div>
                 <div class="flex items-center justify-between">
                     <div class="flex items-center">
                         <span class="text-blue-600 mr-3 text-lg">•</span>
-                        <span class="text-gray-700 font-medium">Gender</span>
+                        <span class="text-gray-700 font-medium">Giới tính</span>
                     </div>
                     <span class="text-gray-500 text-sm">{{ $analytics['demographics']['gender_distribution'] ?? 'N/A' }}</span>
                 </div>
@@ -250,7 +250,7 @@
 
     <div class="bg-white rounded-2xl shadow-xl p-6 border border-gray-100 mt-8 hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-1">
         <div class="flex justify-between items-center mb-4">
-            <h2 class="text-xl font-semibold text-gray-800">Detailed Reports</h2>
+            <h2 class="text-xl font-semibold text-gray-800">Báo Cáo Chi Tiết</h2>
             <div class="flex items-center space-x-3">
                 <form action="{{ route('admin.reports.generate') }}" method="POST" class="inline">
                     @csrf
@@ -287,11 +287,11 @@
             <table class="min-w-full divide-y divide-gray-200">
                 <thead class="bg-gray-50">
                     <tr>
-                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Report Name</th>
-                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Category</th>
-                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date Generated</th>
-                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
-                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tên Báo Cáo</th>
+                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Danh Mục</th>
+                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Ngày Tạo</th>
+                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Trạng Thái</th>
+                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Thao Tác</th>
                     </tr>
                 </thead>
                 <tbody class="bg-white divide-y divide-gray-200">
@@ -535,7 +535,7 @@ function initUserGrowthChart() {
         data: {
             labels: chartData.labels || [],
             datasets: [{
-                label: 'New Users',
+                label: 'Người Dùng Mới',
                 data: chartData.data || [],
                 backgroundColor: 'rgba(59, 130, 246, 0.8)',
                 borderColor: 'rgb(59, 130, 246)',

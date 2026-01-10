@@ -146,6 +146,25 @@
                                 <a href="{{ route('health-plans.show', $plan->id) }}" class="flex-1 text-center bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors">
                                     Xem Kế Hoạch
                                 </a>
+
+                                @if(optional(auth()->user()->settings)->selected_health_plan_id == $plan->id)
+                                    <button disabled class="px-4 py-2 bg-green-100 text-green-600 rounded-lg border border-green-200 cursor-default" title="Đang được chọn">
+                                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                                        </svg>
+                                    </button>
+                                @else
+                                    <form action="{{ route('profile.settings.health-plan') }}" method="POST">
+                                        @csrf
+                                        <input type="hidden" name="health_plan_id" value="{{ $plan->id }}">
+                                        <button type="submit" class="px-4 py-2 bg-white text-gray-400 border border-gray-200 rounded-lg hover:bg-blue-50 hover:text-blue-600 hover:border-blue-200 transition-colors" title="Chọn làm kế hoạch chính">
+                                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                                            </svg>
+                                        </button>
+                                    </form>
+                                @endif
+
                                 <button onclick="deletePlan({{ $plan->id }}, '{{ addslashes($plan->title) }}')" 
                                         class="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors flex items-center justify-center"
                                         title="Xóa kế hoạch">

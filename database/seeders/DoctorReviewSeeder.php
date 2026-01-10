@@ -14,39 +14,42 @@ class DoctorReviewSeeder extends Seeder
      */
     public function run(): void
     {
+        // Xóa dữ liệu reviews cũ (không dùng truncate vì có foreign key)
+        DoctorReview::query()->delete();
+        
         $doctors = Doctor::all();
         
-        // Sample reviews for each doctor
+        // Sample reviews for each doctor (tiếng Việt)
         $sampleReviews = [
             [
-                ['rating' => 5, 'comment' => 'Dr. Johnson is excellent! She took the time to explain everything clearly and made me feel comfortable throughout the consultation.'],
-                ['rating' => 5, 'comment' => 'Very professional and knowledgeable. Highly recommend!'],
-                ['rating' => 4, 'comment' => 'Great doctor, but the wait time was a bit long. Overall good experience.'],
+                ['rating' => 5, 'comment' => 'BS. Hương rất xuất sắc! Bác sĩ đã dành thời gian giải thích mọi thứ rõ ràng và khiến tôi cảm thấy thoải mái trong suốt buổi tư vấn.'],
+                ['rating' => 5, 'comment' => 'Rất chuyên nghiệp và am hiểu. Tôi rất khuyên bạn nên đến khám!'],
+                ['rating' => 4, 'comment' => 'Bác sĩ tốt, nhưng thời gian chờ đợi hơi lâu. Nhìn chung trải nghiệm tốt.'],
             ],
             [
-                ['rating' => 5, 'comment' => 'Dr. Chen is wonderful! He listens carefully and provides excellent care.'],
-                ['rating' => 5, 'comment' => 'Best general practitioner I\'ve ever had. Very thorough and caring.'],
-                ['rating' => 4, 'comment' => 'Good doctor, very patient and understanding.'],
+                ['rating' => 5, 'comment' => 'BS. Minh rất tuyệt vời! Bác sĩ lắng nghe cẩn thận và cung cấp dịch vụ chăm sóc xuất sắc.'],
+                ['rating' => 5, 'comment' => 'Bác sĩ đa khoa tốt nhất mà tôi từng gặp. Rất kỹ lưỡng và quan tâm.'],
+                ['rating' => 4, 'comment' => 'Bác sĩ tốt, rất kiên nhẫn và thấu hiểu.'],
             ],
             [
-                ['rating' => 5, 'comment' => 'Dr. Rodriguez helped me with my skin condition. Excellent results!'],
-                ['rating' => 4, 'comment' => 'Professional and friendly. Would recommend to others.'],
-                ['rating' => 5, 'comment' => 'Great dermatologist, very knowledgeable about skin care.'],
+                ['rating' => 5, 'comment' => 'BS. Mai đã giúp tôi điều trị tình trạng da. Kết quả xuất sắc!'],
+                ['rating' => 4, 'comment' => 'Chuyên nghiệp và thân thiện. Sẽ giới thiệu cho người khác.'],
+                ['rating' => 5, 'comment' => 'Bác sĩ da liễu tuyệt vời, rất am hiểu về chăm sóc da.'],
             ],
             [
-                ['rating' => 5, 'comment' => 'Dr. Wilson is amazing with children. My kids love him!'],
-                ['rating' => 5, 'comment' => 'Best pediatrician ever! Very caring and patient.'],
-                ['rating' => 4, 'comment' => 'Good doctor, always available when needed.'],
+                ['rating' => 5, 'comment' => 'BS. Đức rất tuyệt vời với trẻ em. Các con tôi rất yêu quý bác sĩ!'],
+                ['rating' => 5, 'comment' => 'Bác sĩ nhi khoa tốt nhất! Rất quan tâm và kiên nhẫn.'],
+                ['rating' => 4, 'comment' => 'Bác sĩ tốt, luôn sẵn sàng khi cần.'],
             ],
             [
-                ['rating' => 5, 'comment' => 'Dr. Anderson helped diagnose my condition. Very thorough examination.'],
-                ['rating' => 4, 'comment' => 'Professional neurologist, good at explaining complex medical terms.'],
-                ['rating' => 5, 'comment' => 'Excellent care and follow-up. Highly recommend!'],
+                ['rating' => 5, 'comment' => 'BS. Lan đã giúp chẩn đoán tình trạng của tôi. Khám xét rất kỹ lưỡng.'],
+                ['rating' => 4, 'comment' => 'Bác sĩ thần kinh chuyên nghiệp, giỏi giải thích các thuật ngữ y tế phức tạp.'],
+                ['rating' => 5, 'comment' => 'Chăm sóc xuất sắc và theo dõi tốt. Rất khuyên bạn nên đến khám!'],
             ],
             [
-                ['rating' => 5, 'comment' => 'Dr. Taylor performed my knee surgery. Excellent results and recovery!'],
-                ['rating' => 5, 'comment' => 'Great orthopedic surgeon. Very skilled and professional.'],
-                ['rating' => 4, 'comment' => 'Good doctor, helped me recover from my injury.'],
+                ['rating' => 5, 'comment' => 'BS. Hùng đã thực hiện phẫu thuật đầu gối cho tôi. Kết quả và phục hồi xuất sắc!'],
+                ['rating' => 5, 'comment' => 'Bác sĩ phẫu thuật chỉnh hình tuyệt vời. Rất tài năng và chuyên nghiệp.'],
+                ['rating' => 4, 'comment' => 'Bác sĩ tốt, đã giúp tôi phục hồi sau chấn thương.'],
             ],
         ];
 

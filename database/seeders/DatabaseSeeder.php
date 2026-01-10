@@ -33,5 +33,11 @@ class DatabaseSeeder extends Seeder
         
         // Seed medical content
         $this->call(MedicalContentSeeder::class);
+        
+        // Seed training scenarios
+        $this->call(TrainingScenarioSeeder::class);
+        
+        // Seed AI sessions (optional - chỉ chạy nếu muốn có dữ liệu mẫu)
+        // $this->call(AISessionSeeder::class);
     }
 }

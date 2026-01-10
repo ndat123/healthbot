@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\AIConsultation;
 use App\Models\HealthProfile;
 use App\Services\AIConsultationService;
+use App\Services\AIMetricsService;
 use App\Helpers\SettingsHelper;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -14,10 +15,12 @@ use Carbon\Carbon;
 class AIConsultationController extends Controller
 {
     protected $aiService;
+    protected $metricsService;
 
-    public function __construct(AIConsultationService $aiService)
+    public function __construct(AIConsultationService $aiService, AIMetricsService $metricsService)
     {
         $this->aiService = $aiService;
+        $this->metricsService = $metricsService;
     }
 
     /**
@@ -57,13 +60,13 @@ class AIConsultationController extends Controller
                    "• Đề xuất các chuyên khoa y tế phù hợp\n\n" .
                    "**Quan trọng**: Lời khuyên của tôi chỉ mang tính chất thông tin và không thay thế cho tư vấn y tế chuyên nghiệp.\n\n" .
                    "Tôi có thể giúp gì cho bạn hôm nay?",
-            'en' => "Hello! I'm AI HealthBot, your AI health consultant. I'm here to help you with:\n\n" .
-                   "• Understanding symptoms and health concerns\n" .
-                   "• Personalized nutrition advice\n" .
-                   "• Lifestyle and healthy habit recommendations\n" .
-                   "• Suggestions for appropriate medical specialists\n\n" .
-                   "**Important**: My advice is for informational purposes only and does not replace professional medical consultation.\n\n" .
-                   "How can I help you today?",
+            // 'en' => "Hello! I'm AI HealthBot, your AI health consultant. I'm here to help you with:\n\n" .
+            //        "• Understanding symptoms and health concerns\n" .
+            //        "• Personalized nutrition advice\n" .
+            //        "• Lifestyle and healthy habit recommendations\n" .
+            //        "• Suggestions for appropriate medical specialists\n\n" .
+            //        "**Important**: My advice is for informational purposes only and does not replace professional medical consultation.\n\n" .
+            //        "How can I help you today?",
         ];
         
         $welcomeMessage = $welcomeMessages[$language] ?? $welcomeMessages['vi'];
@@ -135,6 +138,21 @@ class AIConsultationController extends Controller
                     'error' => $e->getMessage(),
                 ]);
                 
+                // Kiểm tra nếu là lỗi overload, trả về message thân thiện
+                $errorMessage = $e->getMessage();
+                if (strpos($errorMessage, 'overloaded') !== false || strpos($errorMessage, '503') !== false) {
+                    return response()->json([
+                        'response' => 'Xin lỗi, hệ thống AI hiện đang quá tải. Vui lòng thử lại sau vài giây.\n\n' .
+                                     'Trong khi chờ đợi, bạn có thể:\n' .
+                                     '• Xem lại các câu hỏi thường gặp\n' .
+                                     '• Tạo kế hoạch sức khỏe cá nhân hóa\n' .
+                                     '• Tham khảo kiến thức y tế trong phần Medical Content',
+                        'session_id' => $sessionId,
+                        'emergency_level' => 'low',
+                        'suggested_specialists' => null,
+                    ], 200); // Trả về 200 với fallback message
+                }
+                
                 return response()->json([
                     'error' => 'Không thể nhận phản hồi từ AI. Vui lòng kiểm tra API key hoặc thử lại sau.',
                     'details' => config('app.debug') ? $e->getMessage() : null,
@@ -159,6 +177,14 @@ class AIConsultationController extends Controller
                     'message_count' => count($conversationHistory) + 1,
                     'duration_seconds' => $duration,
                 ]);
+                
+                // Tự động tạo AISession với accuracy_score và user_satisfaction
+                try {
+                    $this->metricsService->createSessionFromConsultation($consultation);
+                } catch (\Exception $e) {
+                    Log::warning('Error creating AISession from consultation: ' . $e->getMessage());
+                    // Continue even if session creation fails
+                }
             } catch (\Exception $e) {
                 Log::error('Error saving consultation: ' . $e->getMessage());
                 // Continue even if save fails

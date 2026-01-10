@@ -5,8 +5,8 @@
     <div class="max-w-7xl mx-auto">
         <!-- Header -->
         <div class="text-center mb-12">
-            <h1 class="text-4xl font-bold text-gray-900 mb-4">Find Your Doctor</h1>
-            <p class="text-xl text-gray-600">Book an appointment with our experienced healthcare professionals</p>
+            <h1 class="text-4xl font-bold text-gray-900 mb-4">Tìm Bác Sĩ</h1>
+            <p class="text-xl text-gray-600">Đặt lịch hẹn với các chuyên gia y tế giàu kinh nghiệm của chúng tôi</p>
         </div>
 
         @if(session('success'))
@@ -26,16 +26,16 @@
             <form method="GET" action="{{ route('doctor.index') }}" id="searchForm">
                 <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
                     <div>
-                        <label for="search" class="block text-sm font-medium text-gray-700 mb-2">Search Doctor</label>
+                        <label for="search" class="block text-sm font-medium text-gray-700 mb-2">Tìm kiếm Bác sĩ</label>
                         <input type="text" id="search" name="search" value="{{ old('search', $search) }}" 
-                               placeholder="Search by name or specialization..."
+                               placeholder="Tìm theo tên bác sĩ..."
                                class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
                     </div>
                     <div>
-                        <label for="specialization" class="block text-sm font-medium text-gray-700 mb-2">Specialization</label>
+                        <label for="specialization" class="block text-sm font-medium text-gray-700 mb-2">Chuyên khoa</label>
                         <select id="specialization" name="specialization" 
                                 class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
-                            <option value="">All Specializations</option>
+                            <option value="">Tất cả chuyên khoa</option>
                             @foreach($specializations as $spec)
                                 <option value="{{ $spec }}" {{ old('specialization', $specialization) == $spec ? 'selected' : '' }}>
                                     {{ $spec }}
@@ -44,12 +44,12 @@
                         </select>
                     </div>
                     <div>
-                        <label for="availability" class="block text-sm font-medium text-gray-700 mb-2">Availability</label>
+                        <label for="availability" class="block text-sm font-medium text-gray-700 mb-2">Tình trạng</label>
                         <select id="availability" name="availability" 
                                 class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
-                            <option value="">All</option>
-                            <option value="today" {{ old('availability', $availability) == 'today' ? 'selected' : '' }}>Available Today</option>
-                            <option value="tomorrow" {{ old('availability', $availability) == 'tomorrow' ? 'selected' : '' }}>Available Tomorrow</option>
+                            <option value="">Tất cả</option>
+                            <option value="today" {{ old('availability', $availability) == 'today' ? 'selected' : '' }}>Có lịch hôm nay</option>
+                            <option value="tomorrow" {{ old('availability', $availability) == 'tomorrow' ? 'selected' : '' }}>Có lịch ngày mai</option>
                         </select>
                     </div>
                     <div class="flex items-end">
@@ -58,20 +58,20 @@
                             <svg class="w-5 h-5 inline mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
                             </svg>
-                            Search
+                            Tìm kiếm
                         </button>
                     </div>
                 </div>
                 @if($search || $specialization || $availability)
                 <div class="mt-4 flex items-center justify-between">
                     <div class="text-sm text-gray-600">
-                        <span>Found {{ $doctors->count() }} doctor(s)</span>
+                        <span>Tìm thấy {{ $doctors->count() }} bác sĩ</span>
                         @if($search || $specialization || $availability)
-                            <span class="ml-2">with filters applied</span>
+                            <span class="ml-2">với bộ lọc đã áp dụng</span>
                         @endif
                     </div>
                     <a href="{{ route('doctor.index') }}" class="text-sm text-blue-600 hover:text-blue-800">
-                        Clear Filters
+                        Xóa bộ lọc
                     </a>
                 </div>
                 @endif
@@ -103,13 +103,13 @@
                                 <svg class="w-4 h-4 mr-2 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
                                 </svg>
-                                {{ $doctor['experience'] }} experience
+                                {{ $doctor['experience'] }} kinh nghiệm
                             </div>
                             <div class="flex items-center text-sm text-gray-600">
                                 <svg class="w-4 h-4 mr-2 text-yellow-500" fill="currentColor" viewBox="0 0 20 20">
                                     <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"></path>
                                 </svg>
-                                {{ $doctor['rating'] }} ({{ $doctor['reviews'] }} reviews)
+                                {{ $doctor['rating'] }} ({{ $doctor['reviews'] }} đánh giá)
                             </div>
                             <div class="flex items-center text-sm {{ $doctor['available_today'] ? 'text-green-600' : 'text-gray-600' }}">
                                 <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -123,16 +123,16 @@
                         <div class="flex flex-col space-y-2 mt-6">
                             <button onclick="openBookingModal({{ $doctor['id'] }}, '{{ $doctor['name'] }}', '{{ $doctor['specialization'] }}')" 
                                     class="w-full bg-gradient-to-r from-blue-600 to-indigo-600 text-white px-4 py-2 rounded-lg hover:from-blue-700 hover:to-indigo-700 transition-colors font-medium">
-                                Book Appointment
+                                Đặt lịch hẹn
                             </button>
                             <div class="flex space-x-2">
                                 <a href="{{ route('doctor.chat', $doctor['id']) }}" 
                                         class="flex-1 bg-gradient-to-r from-green-600 to-emerald-600 text-white px-4 py-2 rounded-lg hover:from-green-700 hover:to-emerald-700 transition-colors font-medium text-center text-sm">
-                                    Chat
+                                    Trò chuyện
                                 </a>
                                 <a href="{{ route('doctor.show', $doctor['id']) }}" 
                                         class="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors inline-block text-center text-sm">
-                                    Profile
+                                    Hồ sơ
                                 </a>
                             </div>
                         </div>
@@ -145,10 +145,10 @@
             <svg class="w-24 h-24 mx-auto text-gray-400 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
             </svg>
-            <h3 class="text-xl font-semibold text-gray-900 mb-2">No doctors found</h3>
-            <p class="text-gray-600 mb-6">Try adjusting your search criteria or filters.</p>
+            <h3 class="text-xl font-semibold text-gray-900 mb-2">Không tìm thấy bác sĩ</h3>
+            <p class="text-gray-600 mb-6">Vui lòng điều chỉnh tiêu chí tìm kiếm hoặc bộ lọc của bạn.</p>
             <a href="{{ route('doctor.index') }}" class="inline-block bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition-colors">
-                Clear Filters
+                Xóa bộ lọc
             </a>
         </div>
         @endif
@@ -156,7 +156,7 @@
         <!-- Upcoming Appointments Section -->
         @if(count($upcomingAppointments) > 0)
         <div class="bg-white rounded-xl shadow-lg p-8">
-            <h2 class="text-2xl font-bold text-gray-800 mb-6">Your Upcoming Appointments</h2>
+            <h2 class="text-2xl font-bold text-gray-800 mb-6">Lịch hẹn sắp tới của bạn</h2>
             <div class="space-y-4">
                 @foreach($upcomingAppointments as $appointment)
                     <div class="border border-gray-200 rounded-lg p-4 flex items-center justify-between hover:bg-gray-50 transition-colors">
@@ -171,7 +171,7 @@
                             </span>
                             <a href="{{ route('doctor.appointment.show', $appointment['id']) }}" 
                                class="text-blue-600 hover:text-blue-800 text-sm font-medium">
-                                View Details
+                                Xem chi tiết
                             </a>
                         </div>
                     </div>
@@ -186,7 +186,7 @@
 <div id="bookingModal" class="fixed inset-0 bg-black bg-opacity-50 hidden z-50 flex items-center justify-center p-4">
     <div class="bg-white rounded-xl shadow-2xl max-w-md w-full p-6">
         <div class="flex justify-between items-center mb-4">
-            <h3 class="text-2xl font-bold text-gray-900">Book Appointment</h3>
+            <h3 class="text-2xl font-bold text-gray-900">Đặt lịch hẹn</h3>
             <button onclick="closeBookingModal()" class="text-gray-400 hover:text-gray-600">
                 <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
@@ -205,17 +205,17 @@
             
             <div class="space-y-4">
                 <div>
-                    <label for="appointment_date" class="block text-sm font-medium text-gray-700 mb-2">Select Date</label>
+                    <label for="appointment_date" class="block text-sm font-medium text-gray-700 mb-2">Chọn ngày</label>
                     <input type="date" id="appointment_date" name="appointment_date" required
                            min="{{ date('Y-m-d') }}"
                            class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
                 </div>
                 
                 <div>
-                    <label for="appointment_time" class="block text-sm font-medium text-gray-700 mb-2">Select Time</label>
+                    <label for="appointment_time" class="block text-sm font-medium text-gray-700 mb-2">Chọn giờ</label>
                     <select id="appointment_time" name="appointment_time" required
                             class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
-                        <option value="">Choose a time</option>
+                        <option value="">Chọn giờ</option>
                         <option value="09:00">9:00 AM</option>
                         <option value="10:00">10:00 AM</option>
                         <option value="11:00">11:00 AM</option>
@@ -227,18 +227,18 @@
                 </div>
                 
                 <div>
-                    <label for="consultation_type" class="block text-sm font-medium text-gray-700 mb-2">Consultation Type</label>
+                    <label for="consultation_type" class="block text-sm font-medium text-gray-700 mb-2">Hình thức tư vấn</label>
                     <select id="consultation_type" name="consultation_type" required
                             class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
-                        <option value="in-person">In-Person</option>
+                        <option value="in-person">Trực tiếp</option>
                         <option value="video">Video Call</option>
-                        <option value="phone">Phone Call</option>
+                        <option value="phone">Điện thoại</option>
                     </select>
                 </div>
                 
                 <div>
-                    <label for="symptoms" class="block text-sm font-medium text-gray-700 mb-2">Symptoms / Reason for Visit</label>
-                    <textarea id="symptoms" name="symptoms" rows="3" placeholder="Describe your symptoms or reason for consultation..."
+                    <label for="symptoms" class="block text-sm font-medium text-gray-700 mb-2">Triệu chứng / Lý do khám</label>
+                    <textarea id="symptoms" name="symptoms" rows="3" placeholder="Mô tả triệu chứng hoặc lý do tư vấn của bạn..."
                               class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"></textarea>
                 </div>
             </div>
@@ -246,11 +246,11 @@
             <div class="flex space-x-3 mt-6">
                 <button type="button" onclick="closeBookingModal()" 
                         class="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors">
-                    Cancel
+                    Hủy
                 </button>
                 <button type="submit" 
                         class="flex-1 bg-gradient-to-r from-blue-600 to-indigo-600 text-white px-4 py-2 rounded-lg hover:from-blue-700 hover:to-indigo-700 transition-colors font-medium">
-                    Book Appointment
+                    Đặt lịch hẹn
                 </button>
             </div>
         </form>

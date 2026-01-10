@@ -24,6 +24,8 @@ class UserSetting extends Model
         'privacy_level',
         'share_health_data',
         'allow_ai_learning',
+        'selected_nutrition_plan_id',
+        'selected_health_plan_id',
     ];
 
     protected $casts = [
@@ -42,6 +44,22 @@ class UserSetting extends Model
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
+    }
+
+    /**
+     * Get the selected nutrition plan.
+     */
+    public function selectedNutritionPlan(): BelongsTo
+    {
+        return $this->belongsTo(NutritionPlan::class, 'selected_nutrition_plan_id');
+    }
+
+    /**
+     * Get the selected health plan.
+     */
+    public function selectedHealthPlan(): BelongsTo
+    {
+        return $this->belongsTo(HealthPlan::class, 'selected_health_plan_id');
     }
 
     /**

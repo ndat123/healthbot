@@ -56,7 +56,22 @@ class AIConsultationService
 
             // Get AI response (sử dụng language từ settings)
             $language = SettingsHelper::getUserLanguage($user);
-            $aiResponse = $this->getAIResponse($prompt, $conversationHistory, $language);
+            try {
+                $aiResponse = $this->getAIResponse($prompt, $conversationHistory, $language);
+            } catch (\Exception $e) {
+                // Nếu là lỗi overload (503), trả về fallback message thay vì throw
+                if (strpos($e->getMessage(), 'overloaded') !== false || strpos($e->getMessage(), '503') !== false) {
+                    $aiResponse = "Xin lỗi, hệ thống AI hiện đang quá tải. Vui lòng thử lại sau vài giây.\n\n" .
+                                 "Trong khi chờ đợi, bạn có thể:\n" .
+                                 "• Xem lại các câu hỏi thường gặp\n" .
+                                 "• Tạo kế hoạch sức khỏe cá nhân hóa\n" .
+                                 "• Tham khảo kiến thức y tế trong phần Medical Content\n\n" .
+                                 "Nếu vấn đề của bạn khẩn cấp, vui lòng tìm kiếm sự chăm sóc y tế chuyên nghiệp ngay lập tức.";
+                } else {
+                    // Với các lỗi khác, vẫn throw
+                    throw $e;
+                }
+            }
 
             // Extract suggested specialists if applicable
             $suggestedSpecialists = $this->extractSpecialistSuggestions($aiResponse, $consultationType);
@@ -202,7 +217,14 @@ class AIConsultationService
         string $consultationType,
         string $emergencyLevel
     ): string {
-        $prompt = "Bạn là AI HealthBot, một chuyên gia tư vấn sức khỏe AI chuyên nghiệp. Cung cấp lời khuyên sức khỏe hữu ích, chính xác và cá nhân hóa bằng TIẾNG VIỆT.\n\n";
+        $prompt = "=== QUY TẮC NGÔN NGỮ BẮT BUỘC ===\n";
+        $prompt .= "BẠN PHẢI TRẢ LỜI BẰNG TIẾNG VIỆT. KHÔNG BAO GIỜ TRẢ LỜI BẰNG TIẾNG ANH.\n";
+        $prompt .= "NẾU BẠN TRẢ LỜI BẰNG TIẾNG ANH, ĐÓ LÀ LỖI NGHIÊM TRỌNG VÀ KHÔNG CHẤP NHẬN ĐƯỢC.\n";
+        $prompt .= "MỌI CÂU TRẢ LỜI PHẢI BẰNG TIẾNG VIỆT HOÀN TOÀN.\n\n";
+        
+        $prompt .= "Bạn là AI HealthBot, một chuyên gia tư vấn sức khỏe AI chuyên nghiệp. Cung cấp lời khuyên sức khỏe hữu ích, chính xác và cá nhân hóa bằng TIẾNG VIỆT.\n\n";
+        
+        $prompt .= "QUY TẮC BẮT BUỘC: Bạn PHẢI trả lời bằng TIẾNG VIỆT trong MỌI trường hợp. KHÔNG BAO GIỜ trả lời bằng tiếng Anh hoặc ngôn ngữ khác, kể cả khi người dùng hỏi bằng tiếng Việt. Nếu bạn trả lời bằng tiếng Anh, đó là LỖI NGHIÊM TRỌNG.\n\n";
         
         $prompt .= "QUAN TRỌNG: Luôn bao gồm tuyên bố từ chối trách nhiệm y tế khi thảo luận về triệu chứng hoặc tình trạng y tế. Đối với các triệu chứng nghiêm trọng, ngay lập tức khuyên nên gặp bác sĩ.\n\n";
 
@@ -244,12 +266,16 @@ class AIConsultationService
         }
 
         $prompt .= "\nTin nhắn của người dùng: {$message}\n\n";
-        $prompt .= "YÊU CẦU:\n";
-        $prompt .= "1. Phản hồi bằng TIẾNG VIỆT rõ ràng, đồng cảm\n";
+        $prompt .= "=== YÊU CẦU BẮT BUỘC ===\n";
+        $prompt .= "1. ⚠️ BẮT BUỘC TUYỆT ĐỐI: Phản hồi bằng TIẾNG VIỆT rõ ràng, đồng cảm. KHÔNG BAO GIỜ trả lời bằng tiếng Anh hoặc ngôn ngữ khác.\n";
         $prompt .= "2. Bao gồm tuyên bố từ chối trách nhiệm y tế nếu thảo luận về triệu chứng/tình trạng\n";
         $prompt .= "3. Ngắn gọn nhưng đầy đủ (200-400 từ)\n";
         $prompt .= "4. Sử dụng dấu đầu dòng để rõ ràng\n";
         $prompt .= "5. Đối với trường hợp khẩn cấp: khuyên tìm kiếm sự chăm sóc y tế ngay lập tức TRƯỚC TIÊN\n";
+        $prompt .= "\n=== NHẮC LẠI LẦN CUỐI ===\n";
+        $prompt .= "BẠN PHẢI TRẢ LỜI BẰNG TIẾNG VIỆT. KHÔNG TRẢ LỜI BẰNG TIẾNG ANH.\n";
+        $prompt .= "MỌI TỪ NGỮ, CÂU VĂN PHẢI BẰNG TIẾNG VIỆT.\n";
+        $prompt .= "NẾU BẠN BẮT ĐẦU TRẢ LỜI BẰNG TIẾNG ANH, HÃY DỪNG LẠI VÀ TRẢ LỜI BẰNG TIẾNG VIỆT.\n";
 
         return $prompt;
     }
@@ -269,7 +295,13 @@ class AIConsultationService
             ];
             $responseLanguage = $languageMap[$language] ?? 'TIẾNG VIỆT';
             
-            $systemInstruction = "Bạn là AI HealthBot, một chuyên gia tư vấn sức khỏe AI chuyên nghiệp. LUÔN bao gồm các tuyên bố từ chối trách nhiệm y tế phù hợp khi thảo luận về tình trạng y tế hoặc triệu chứng. Hãy đồng cảm, rõ ràng, hữu ích và phản hồi bằng {$responseLanguage}. Đối với các triệu chứng khẩn cấp (đau ngực, đột quỵ, chảy máu nghiêm trọng), ngay lập tức khuyên nên tìm kiếm sự chăm sóc y tế khẩn cấp.";
+            $systemInstruction = "Bạn là AI HealthBot, một chuyên gia tư vấn sức khỏe AI chuyên nghiệp.\n\n";
+            $systemInstruction .= "=== QUY TẮC NGÔN NGỮ BẮT BUỘC ===\n";
+            $systemInstruction .= "BẠN PHẢI TRẢ LỜI BẰNG {$responseLanguage} TRONG MỌI TRƯỜNG HỢP.\n";
+            $systemInstruction .= "KHÔNG BAO GIỜ TRẢ LỜI BẰNG TIẾNG ANH HOẶC NGÔN NGỮ KHÁC.\n";
+            $systemInstruction .= "NẾU BẠN TRẢ LỜI BẰNG TIẾNG ANH, ĐÓ LÀ LỖI NGHIÊM TRỌNG.\n";
+            $systemInstruction .= "MỌI CÂU TRẢ LỜI PHẢI BẰNG {$responseLanguage} HOÀN TOÀN.\n\n";
+            $systemInstruction .= "LUÔN bao gồm các tuyên bố từ chối trách nhiệm y tế phù hợp khi thảo luận về tình trạng y tế hoặc triệu chứng. Hãy đồng cảm, rõ ràng, hữu ích và phản hồi bằng {$responseLanguage}. Đối với các triệu chứng khẩn cấp (đau ngực, đột quỵ, chảy máu nghiêm trọng), ngay lập tức khuyên nên tìm kiếm sự chăm sóc y tế khẩn cấp.";
 
             // Convert conversation history to format expected by GeminiService
             $formattedHistory = [];
@@ -293,7 +325,7 @@ class AIConsultationService
                     'timeout' => 120,
                     'http_timeout' => 90,
                     'model' => 'gemini-2.5-flash',
-                    'retry' => 2
+                    'retry' => 3 // Tăng số lần retry cho 503 errors
                 ]
             );
 

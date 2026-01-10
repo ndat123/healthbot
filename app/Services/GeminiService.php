@@ -65,11 +65,11 @@ class GeminiService
             if ($systemInstruction) {
                 $contents[] = [
                     'role' => 'user',
-                    'parts' => [['text' => "System Instructions: " . $systemInstruction . "\n\nPlease follow these instructions for all responses."]]
+                    'parts' => [['text' => "System Instructions (BẮT BUỘC PHẢI TUÂN THEO):\n\n" . $systemInstruction . "\n\nQUAN TRỌNG: Bạn PHẢI tuân theo các hướng dẫn này cho TẤT CẢ các phản hồi. Đặc biệt, bạn PHẢI trả lời bằng ngôn ngữ được chỉ định trong system instructions."]]
                 ];
                 $contents[] = [
                     'role' => 'model',
-                    'parts' => [['text' => "Understood. I will follow these instructions."]]
+                    'parts' => [['text' => "Đã hiểu. Tôi sẽ tuân theo các hướng dẫn này và trả lời bằng ngôn ngữ được chỉ định."]]
                 ];
             }
             
@@ -122,7 +122,7 @@ class GeminiService
             Log::info('Gemini API Request URL', ['url' => str_replace($apiKey, '***', $url)]);
             
             // Make API request with retry logic
-            $maxRetries = $options['retry'] ?? 1;
+            $maxRetries = $options['retry'] ?? 3; // Tăng số lần retry mặc định
             $retryDelay = 2; // seconds
             $lastException = null;
             $response = null;
@@ -130,8 +130,12 @@ class GeminiService
             for ($attempt = 1; $attempt <= $maxRetries; $attempt++) {
                 try {
                     if ($attempt > 1) {
-                        Log::info("Gemini API Retry attempt {$attempt}", ['max_retries' => $maxRetries]);
-                        sleep($retryDelay * ($attempt - 1)); // Exponential backoff
+                        $delay = $retryDelay * pow(2, $attempt - 2); // Exponential backoff: 2s, 4s, 8s...
+                        Log::info("Gemini API Retry attempt {$attempt}", [
+                            'max_retries' => $maxRetries,
+                            'delay' => $delay . 's'
+                        ]);
+                        sleep($delay);
                     }
                     
                     $response = Http::timeout($options['http_timeout'] ?? 120)
@@ -143,12 +147,29 @@ class GeminiService
                         break;
                     }
                     
-                    // If it's not a timeout/connection error, don't retry
-                    if ($response->status() !== 0 && $response->status() < 500) {
+                    // Retry for 503 (overloaded) and 500+ errors
+                    $statusCode = $response->status();
+                    if ($statusCode === 503 || $statusCode >= 500) {
+                        $errorData = $response->json();
+                        $errorMsg = $errorData['error']['message'] ?? "HTTP Status: {$statusCode}";
+                        $lastException = new \RuntimeException($errorMsg);
+                        
+                        if ($attempt < $maxRetries) {
+                            Log::warning("Gemini API Server error (will retry)", [
+                                'attempt' => $attempt,
+                                'status' => $statusCode,
+                                'error' => $errorMsg
+                            ]);
+                            continue;
+                        }
+                    }
+                    
+                    // If it's not a retryable error, don't retry
+                    if ($statusCode !== 0 && $statusCode < 500 && $statusCode !== 503) {
                         break;
                     }
                     
-                    $lastException = new \RuntimeException("HTTP Status: {$response->status()}");
+                    $lastException = new \RuntimeException("HTTP Status: {$statusCode}");
                 } catch (\Illuminate\Http\Client\ConnectionException $e) {
                     $lastException = $e;
                     if ($attempt < $maxRetries) {

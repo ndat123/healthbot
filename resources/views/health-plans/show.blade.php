@@ -899,22 +899,29 @@ function toggleMealCompletion(checkbox) {
     const mealKey = checkbox.dataset.mealKey;
     const isCompleted = checkbox.checked;
     
-    // Update UI immediately
-    const mealCard = checkbox.closest('.activity-card');
-    const mealText = mealCard.querySelector('span');
+    // Update UI immediately - support both .meal-group and .activity-card
+    const mealCard = checkbox.closest('.meal-group') || checkbox.closest('.activity-card');
+    const mealText = mealCard ? mealCard.querySelector('h4 span') || mealCard.querySelector('span') : null;
     
-    if (isCompleted) {
-        mealCard.classList.add('opacity-75');
-        mealCard.style.backgroundColor = '#fef3c7';
-        mealCard.style.borderColor = '#fbbf24';
-        mealText.classList.add('line-through', 'text-gray-500');
-        mealText.classList.remove('text-gray-800');
-    } else {
-        mealCard.classList.remove('opacity-75');
-        mealCard.style.backgroundColor = '';
-        mealCard.style.borderColor = '';
-        mealText.classList.remove('line-through', 'text-gray-500');
-        mealText.classList.add('text-gray-800');
+    if (mealCard && mealText) {
+        if (isCompleted) {
+            mealCard.classList.add('opacity-75');
+            if (mealCard.classList.contains('meal-group')) {
+                mealCard.style.backgroundColor = '#fef3c7';
+                mealCard.style.borderColor = '#fbbf24';
+            } else {
+                mealCard.style.backgroundColor = '#fef3c7';
+                mealCard.style.borderColor = '#fbbf24';
+            }
+            mealText.classList.add('line-through', 'text-gray-500');
+            mealText.classList.remove('text-gray-800', 'text-orange-900');
+        } else {
+            mealCard.classList.remove('opacity-75');
+            mealCard.style.backgroundColor = '';
+            mealCard.style.borderColor = '';
+            mealText.classList.remove('line-through', 'text-gray-500');
+            mealText.classList.add('text-gray-800');
+        }
     }
     
     // Save to server
@@ -922,7 +929,8 @@ function toggleMealCompletion(checkbox) {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
-            'X-CSRF-TOKEN': '{{ csrf_token() }}'
+            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '{{ csrf_token() }}',
+            'Accept': 'application/json'
         },
         body: JSON.stringify({
             day: parseInt(day),
@@ -931,7 +939,12 @@ function toggleMealCompletion(checkbox) {
             completed: isCompleted
         })
     })
-    .then(response => response.json())
+    .then(response => {
+        if (!response.ok) {
+            throw new Error('Network response was not ok');
+        }
+        return response.json();
+    })
     .then(data => {
         if (data.success) {
             // Update progress bar if needed
@@ -947,6 +960,7 @@ function toggleMealCompletion(checkbox) {
             // Revert on error
             checkbox.checked = !isCompleted;
             toggleMealCompletion(checkbox);
+            alert(data.message || 'Có lỗi xảy ra khi cập nhật');
         }
     })
     .catch(error => {
@@ -954,6 +968,7 @@ function toggleMealCompletion(checkbox) {
         // Revert on error
         checkbox.checked = !isCompleted;
         toggleMealCompletion(checkbox);
+        alert('Có lỗi xảy ra. Vui lòng thử lại.');
     });
 }
 
@@ -987,7 +1002,8 @@ function toggleExerciseCompletion(checkbox) {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
-            'X-CSRF-TOKEN': '{{ csrf_token() }}'
+            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '{{ csrf_token() }}',
+            'Accept': 'application/json'
         },
         body: JSON.stringify({
             day: parseInt(day),
@@ -997,7 +1013,12 @@ function toggleExerciseCompletion(checkbox) {
             is_exercise: true
         })
     })
-    .then(response => response.json())
+    .then(response => {
+        if (!response.ok) {
+            throw new Error('Network response was not ok');
+        }
+        return response.json();
+    })
     .then(data => {
         if (data.success) {
             if (data.completion_percentage !== undefined) {
@@ -1011,12 +1032,14 @@ function toggleExerciseCompletion(checkbox) {
         } else {
             checkbox.checked = !isCompleted;
             toggleExerciseCompletion(checkbox);
+            alert(data.message || 'Có lỗi xảy ra khi cập nhật');
         }
     })
     .catch(error => {
         console.error('Error:', error);
         checkbox.checked = !isCompleted;
         toggleExerciseCompletion(checkbox);
+        alert('Có lỗi xảy ra. Vui lòng thử lại.');
     });
 }
 
@@ -1237,16 +1260,25 @@ function saveMealSelection(mealKey, optionIndex) {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
-            'X-CSRF-TOKEN': '{{ csrf_token() }}'
+            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '{{ csrf_token() }}',
+            'Accept': 'application/json'
         },
         body: JSON.stringify({
             meal_key: mealKey,
             option_index: optionIndex
         })
-    }).then(response => response.json())
+    })
+    .then(response => {
+        if (!response.ok) {
+            throw new Error('Network response was not ok');
+        }
+        return response.json();
+    })
     .then(data => {
         if (data.success) {
             console.log('Meal selection saved successfully');
+        } else {
+            console.error('Error saving meal selection:', data.message);
         }
     })
     .catch(error => {

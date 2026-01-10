@@ -233,6 +233,97 @@ $(document).ready(function() {
         }
     });
 
+    // Function to load consultation history
+    function loadConsultationHistory(sessionIdParam) {
+        if (!sessionIdParam) return;
+        
+        // Show loading state
+        $('#chat-messages').html(`
+            <div class="flex items-center justify-center h-full">
+                <div class="text-center">
+                    <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-2"></div>
+                    <p class="text-sm text-gray-600">Đang tải lịch sử...</p>
+                </div>
+            </div>
+        `);
+        
+        // Hide disclaimer banner and check checkbox
+        $('#disclaimer-banner').fadeOut();
+        $('#disclaimer-checkbox').prop('checked', true);
+        disclaimerAcknowledged = true;
+        $('#message-input, #send-btn').prop('disabled', false);
+        
+        // Load history
+        $.ajax({
+            url: '{{ route("ai-consultation.history", ":sessionId") }}'.replace(':sessionId', sessionIdParam),
+            method: 'GET',
+            headers: {
+                'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+            },
+            success: function(response) {
+                // Clear chat messages
+                $('#chat-messages').html('');
+                
+                // Set session ID to the clicked session
+                sessionId = sessionIdParam;
+                
+                // Display conversation history
+                if (response.conversation && response.conversation.length > 0) {
+                    response.conversation.forEach(function(msg) {
+                        // Add user message
+                        if (msg.user_message) {
+                            addMessage(msg.user_message, 'user');
+                        }
+                        // Add AI response
+                        if (msg.ai_response) {
+                            let responseText = msg.ai_response;
+                            if (msg.suggested_specialists && msg.suggested_specialists.length > 0) {
+                                responseText += '\n\n**Chuyên Khoa Đề Xuất:**\n';
+                                msg.suggested_specialists.forEach(function(spec) {
+                                    responseText += `• ${spec.charAt(0).toUpperCase() + spec.slice(1).replace('_', ' ')}\n`;
+                                });
+                            }
+                            const aiMessageId = addMessage(responseText, 'ai');
+                            
+                            // Highlight emergency level if high
+                            if (msg.emergency_level === 'critical' || msg.emergency_level === 'high') {
+                                $(`#msg-${aiMessageId}`).find('.bg-gray-100').addClass('border-2 border-red-300 bg-red-50');
+                            }
+                        }
+                    });
+                } else {
+                    addMessage('Không tìm thấy lịch sử cuộc trò chuyện.', 'ai');
+                }
+                
+                // Add history indicator at the top
+                $('#chat-messages').prepend(`
+                    <div class="bg-blue-50 border-l-4 border-blue-500 p-3 mb-4 rounded-r-lg">
+                        <p class="text-sm text-blue-800">
+                            <strong>📜 Đang xem lịch sử cuộc trò chuyện</strong>
+                        </p>
+                        <p class="text-xs text-blue-600 mt-1">Bấm nút "Cuộc trò chuyện mới" để bắt đầu cuộc trò chuyện mới</p>
+                    </div>
+                `);
+                
+                // Disable input since this is history view
+                $('#message-input, #send-btn').prop('disabled', true);
+                $('#message-input').attr('placeholder', 'Đây là lịch sử cuộc trò chuyện. Bắt đầu cuộc trò chuyện mới để tiếp tục.');
+            },
+            error: function(xhr) {
+                $('#chat-messages').html('');
+                addMessage('❌ Không thể tải lịch sử cuộc trò chuyện. Vui lòng thử lại.', 'ai');
+                console.error('Error loading history:', xhr.responseJSON || xhr.responseText);
+            }
+        });
+    }
+
+    // Check if there's a session parameter in URL and load history
+    const urlParams = new URLSearchParams(window.location.search);
+    const sessionParam = urlParams.get('session');
+    if (sessionParam) {
+        loadConsultationHistory(sessionParam);
+    }
+
     // Start new session
     function startSession() {
         $.ajax({

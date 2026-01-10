@@ -105,6 +105,25 @@
                                class="flex-1 text-center bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition-colors">
                                 Xem Kế Hoạch
                             </a>
+                            
+                            @if(optional(auth()->user()->settings)->selected_nutrition_plan_id == $plan->id)
+                                <button disabled class="px-4 py-2 bg-blue-400 text-white rounded-lg cursor-not-allowed flex items-center justify-center" title="Đang sử dụng">
+                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                    </svg>
+                                </button>
+                            @else
+                                <form action="{{ route('profile.settings.nutrition-plan') }}" method="POST" class="inline-block">
+                                    @csrf
+                                    <input type="hidden" name="nutrition_plan_id" value="{{ $plan->id }}">
+                                    <button type="submit" class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors flex items-center justify-center" title="Chọn làm kế hoạch chính">
+                                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                                        </svg>
+                                    </button>
+                                </form>
+                            @endif
+
                             <button onclick="deletePlan({{ $plan->id }}, '{{ addslashes($plan->title) }}')" 
                                     class="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors flex items-center justify-center"
                                     title="Xóa kế hoạch">

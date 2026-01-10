@@ -56,6 +56,53 @@ class ProfileController extends Controller
     }
 
     /**
+     * Show settings page
+     */
+    public function settings()
+    {
+        $user = Auth::user();
+        
+        // Use existing settings retrieval logic or refactor
+        try {
+            $settings = UserSetting::firstOrCreate(
+                ['user_id' => $user->id],
+                [
+                    'email_notifications' => true,
+                    'sms_notifications' => false,
+                    'health_reminders' => true,
+                    'appointment_reminders' => true,
+                    'newsletter_subscription' => false,
+                    'language' => 'en',
+                    'timezone' => 'UTC',
+                    'privacy_level' => 'private',
+                    'share_health_data' => false,
+                    'allow_ai_learning' => true,
+                ]
+            );
+        } catch (\Exception $e) {
+            $settings = (object) [
+                'email_notifications' => true,
+                'sms_notifications' => false,
+                'health_reminders' => true,
+                'appointment_reminders' => true,
+                'newsletter_subscription' => false,
+                'language' => 'en',
+                'timezone' => 'UTC',
+                'privacy_level' => 'private',
+                'share_health_data' => false,
+                'allow_ai_learning' => true,
+            ];
+        }
+        
+        // Get reminders
+        $reminders = \App\Models\Reminder::where('user_id', $user->id)
+            ->orderBy('reminder_time', 'asc')
+            ->get();
+        
+        return view('profile.settings', compact('user', 'settings', 'reminders'));
+    }
+
+    /**
      * Update profile
      */
     public function update(Request $request)
@@ -304,15 +351,66 @@ class ProfileController extends Controller
                 $validated
             );
 
-            return redirect()->route('profile.index', ['#settings'])
+            return redirect()->route('settings.index')
                 ->with('success', 'Cập nhật cài đặt thành công!');
         } catch (\Exception $e) {
             // Log error for debugging
             \Log::error('Settings update error: ' . $e->getMessage());
             
-            return redirect()->route('profile.index', ['#settings'])
+            return redirect()->route('settings.index')
                 ->with('error', 'Không thể cập nhật cài đặt. Vui lòng đảm bảo migration database đã được chạy: php artisan migrate');
         }
+    }
+
+
+    /**
+     * Update selected nutrition plan
+     */
+    public function updateNutritionPlan(Request $request)
+    {
+        $request->validate([
+            'nutrition_plan_id' => 'required|exists:nutrition_plans,id',
+        ]);
+
+        $user = Auth::user();
+        
+        // Ensure user owns the plan
+        $plan = \App\Models\NutritionPlan::where('id', $request->nutrition_plan_id)
+            ->where('user_id', $user->id)
+            ->firstOrFail();
+
+        // Update settings
+        UserSetting::updateOrCreate(
+            ['user_id' => $user->id],
+            ['selected_nutrition_plan_id' => $plan->id]
+        );
+
+        return redirect()->back()->with('success', 'Đã lưu kế hoạch dinh dưỡng vào cài đặt!');
+    }
+
+    /**
+     * Update selected health plan
+     */
+    public function updateHealthPlan(Request $request)
+    {
+        $request->validate([
+            'health_plan_id' => 'required|exists:health_plans,id',
+        ]);
+
+        $user = Auth::user();
+        
+        // Ensure user owns the plan
+        $plan = \App\Models\HealthPlan::where('id', $request->health_plan_id)
+            ->where('user_id', $user->id)
+            ->firstOrFail();
+
+        // Update settings
+        UserSetting::updateOrCreate(
+            ['user_id' => $user->id],
+            ['selected_health_plan_id' => $plan->id]
+        );
+
+        return redirect()->back()->with('success', 'Đã lưu kế hoạch sức khỏe vào cài đặt!');
     }
 }
 

@@ -200,18 +200,37 @@
                             <!-- Dropdown Menu -->
                             <div class="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-xl border border-gray-200 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300 z-50">
                                 <div class="py-2">
+                                    @if(Auth::user()->role === 'doctor')
+                                        <a href="{{ route('doctor.conversations') }}" class="flex items-center px-4 py-3 text-gray-700 hover:bg-green-50 hover:text-green-600 transition-colors">
+                                            <svg class="w-5 h-5 mr-3 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"></path>
+                                            </svg>
+                                            <span>Trò chuyện</span>
+                                        </a>
+                                        <div class="border-t border-gray-200 my-1"></div>
+                                    @endif
+                                    @if(Auth::user()->role === 'admin')
+                                        <a href="{{ route('admin.dashboard') }}" class="flex items-center px-4 py-3 text-gray-700 hover:bg-yellow-50 hover:text-yellow-600 transition-colors">
+                                            <svg class="w-5 h-5 mr-3 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path>
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                                            </svg>
+                                            <span>Quản trị</span>
+                                        </a>
+                                        <div class="border-t border-gray-200 my-1"></div>
+                                    @endif
                                     <a href="{{ route('profile.index') }}" class="flex items-center px-4 py-3 text-gray-700 hover:bg-blue-50 hover:text-blue-600 transition-colors">
                                         <svg class="w-5 h-5 mr-3 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
                                         </svg>
                                         <span>Hồ sơ</span>
                                     </a>
-                                    <a href="{{ route('profile.index') }}#settings" class="flex items-center px-4 py-3 text-gray-700 hover:bg-blue-50 hover:text-blue-600 transition-colors">
+                                        <a href="{{ route('settings.index') }}" class="flex items-center px-4 py-3 text-gray-700 hover:bg-blue-50 hover:text-blue-600 transition-colors">
                                         <svg class="w-5 h-5 mr-3 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path>
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
                                         </svg>
-                                        <span>Cài đặt</span>
+                                        <span>Lưu trữ</span>
                                     </a>
                                     <div class="border-t border-gray-200 my-1"></div>
                                     <form action="{{ route('logout') }}" method="POST" class="inline">
@@ -231,16 +250,49 @@
                     <div class="flex items-center space-x-4">
                         <a href="{{ route('login') }}" class="text-gray-600 hover:text-blue-600 transition-colors duration-200">Đăng nhập</a>
                         <a href="{{ route('register') }}" class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors duration-200">Đăng ký</a>
-                        <div class="border-l border-gray-300 h-6 mx-2"></div>
-                        <a href="/admin/login" class="text-gray-500 hover:text-gray-700 text-sm transition-colors duration-200">Admin</a>
                     </div>
                 @endauth
             </nav>
-            <button class="md:hidden text-gray-600 focus:outline-none">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <button id="mobile-menu-button" class="md:hidden text-gray-600 focus:outline-none" aria-label="Toggle menu">
+                <svg id="menu-icon" xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
                 </svg>
+                <svg id="close-icon" xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 hidden" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                </svg>
             </button>
+        </div>
+        
+        <!-- Mobile Menu -->
+        <div id="mobile-menu" class="hidden md:hidden bg-white border-t border-gray-200 shadow-lg">
+            <div class="container mx-auto px-4 py-4 space-y-4">
+                <a href="#services" class="block text-gray-600 hover:text-blue-600 transition-colors py-2">Trang chủ</a>
+                @auth
+                    <div class="space-y-2">
+                        <p class="text-sm font-semibold text-gray-800 mb-2">Dịch vụ</p>
+                        <a href="{{ route('ai-consultation.index') }}" class="block text-gray-600 hover:text-blue-600 transition-colors py-2 pl-4">Chat AI</a>
+                        <a href="{{ route('nutrition.index') }}" class="block text-gray-600 hover:text-blue-600 transition-colors py-2 pl-4">Dinh dưỡng</a>
+                        <a href="{{ route('health-tracking.index') }}" class="block text-gray-600 hover:text-blue-600 transition-colors py-2 pl-4">Theo dõi</a>
+                        <a href="{{ route('health-journal.index') }}" class="block text-gray-600 hover:text-blue-600 transition-colors py-2 pl-4">Nhật ký</a>
+                        <a href="{{ route('health-plans.index') }}" class="block text-gray-600 hover:text-blue-600 transition-colors py-2 pl-4">Kế hoạch</a>
+                        <a href="{{ route('doctor.index') }}" class="block text-gray-600 hover:text-blue-600 transition-colors py-2 pl-4">Bác sĩ</a>
+                        <a href="{{ route('medical-content.index') }}" class="block text-gray-600 hover:text-blue-600 transition-colors py-2 pl-4">Kiến thức y tế</a>
+                        <a href="{{ route('medical-content.bookmarks') }}" class="block text-gray-600 hover:text-blue-600 transition-colors py-2 pl-4">Đánh dấu của tôi</a>
+                    </div>
+                    @if(Auth::user()->role === 'doctor')
+                        <a href="{{ route('doctor.conversations') }}" class="block text-gray-600 hover:text-green-600 transition-colors py-2">Trò chuyện</a>
+                    @endif
+                    <a href="{{ route('profile.index') }}" class="block text-gray-600 hover:text-blue-600 transition-colors py-2">Hồ sơ</a>
+                    <a href="{{ route('settings.index') }}" class="block text-gray-600 hover:text-blue-600 transition-colors py-2">Lưu trữ</a>
+                    <form action="{{ route('logout') }}" method="POST" class="inline">
+                        @csrf
+                        <button type="submit" class="block w-full text-left text-gray-600 hover:text-red-600 transition-colors py-2">Đăng xuất</button>
+                    </form>
+                @else
+                    <a href="{{ route('login') }}" class="block text-gray-600 hover:text-blue-600 transition-colors py-2">Đăng nhập</a>
+                    <a href="{{ route('register') }}" class="block bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors text-center">Đăng ký</a>
+                @endauth
+            </div>
         </div>
     </header>
 
@@ -294,8 +346,19 @@
     <script>
         $(document).ready(function() {
             // Mobile menu toggle
-            $('button[class*="md:hidden"]').click(function() {
-                $('nav[class*="hidden md:flex"]').toggleClass('hidden');
+            $('#mobile-menu-button').click(function() {
+                $('#mobile-menu').toggleClass('hidden');
+                $('#menu-icon').toggleClass('hidden');
+                $('#close-icon').toggleClass('hidden');
+            });
+            
+            // Close mobile menu when clicking outside
+            $(document).click(function(e) {
+                if (!$(e.target).closest('#mobile-menu-button, #mobile-menu').length) {
+                    $('#mobile-menu').addClass('hidden');
+                    $('#menu-icon').removeClass('hidden');
+                    $('#close-icon').addClass('hidden');
+                }
             });
 
             // Smooth scrolling for anchor links

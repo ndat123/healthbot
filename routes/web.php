@@ -79,6 +79,14 @@ Route::middleware('auth')->group(function () {
     
     // Doctor routes
     Route::get('/doctor', [DoctorController::class, 'index'])->name('doctor.index');
+    
+    // Doctor chat routes (for doctors to chat with users) - MUST be before /doctor/{id} to avoid route conflict
+    Route::get('/doctor/conversations', [DoctorController::class, 'conversations'])->name('doctor.conversations');
+    Route::get('/doctor/conversation/{userId}', [DoctorController::class, 'conversationWithUser'])->name('doctor.conversation');
+    Route::post('/doctor/conversation/{userId}/send', [DoctorController::class, 'sendMessageToUser'])->name('doctor.conversation.send');
+    Route::get('/doctor/conversation/{userId}/messages', [DoctorController::class, 'getMessagesFromUser'])->name('doctor.conversation.messages');
+    
+    // Doctor profile and booking routes
     Route::get('/doctor/{id}', [DoctorController::class, 'show'])->name('doctor.show');
     Route::post('/doctor/booking', [DoctorController::class, 'store'])->name('doctor.booking.store');
     Route::get('/doctor/appointment/{id}', [DoctorController::class, 'showAppointment'])->name('doctor.appointment.show');
@@ -91,6 +99,9 @@ Route::middleware('auth')->group(function () {
     Route::put('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::put('/profile/password', [ProfileController::class, 'updatePassword'])->name('profile.password.update');
     Route::put('/profile/settings', [ProfileController::class, 'updateSettings'])->name('profile.settings.update');
+    Route::post('/profile/settings/nutrition-plan', [ProfileController::class, 'updateNutritionPlan'])->name('profile.settings.nutrition-plan');
+    Route::post('/profile/settings/health-plan', [ProfileController::class, 'updateHealthPlan'])->name('profile.settings.health-plan');
+    Route::get('/settings', [ProfileController::class, 'settings'])->name('settings.index');
     
     // Reminder routes
     Route::get('/reminders', [\App\Http\Controllers\ReminderController::class, 'index'])->name('reminders.index');

@@ -94,22 +94,10 @@ class AdminController extends Controller
             ];
         }
 
-        // Tính AI performance metrics
-        // Accuracy: lấy từ ai_sessions nếu có, nếu không thì tính từ emergency_level accuracy
+        // Tính AI performance metrics - CHỈ dùng dữ liệu thực tế
+        // Accuracy: lấy từ ai_sessions
         $avgAccuracy = AISession::whereNotNull('accuracy_score')
             ->avg('accuracy_score');
-        
-        // Nếu không có accuracy từ ai_sessions, tính dựa trên emergency_level accuracy
-        if (!$avgAccuracy) {
-            // Giả sử accuracy dựa trên tỷ lệ emergency_level được xử lý đúng
-            $totalConsultations = AIConsultation::count();
-            if ($totalConsultations > 0) {
-                // Giả định accuracy là 90% nếu không có dữ liệu thực
-                $avgAccuracy = 90.0;
-            } else {
-                $avgAccuracy = 0;
-            }
-        }
 
         // Response time: tính từ duration_seconds (giả sử response time = duration / message_count)
         $avgResponseTime = AIConsultation::whereNotNull('duration_seconds')
@@ -117,14 +105,14 @@ class AdminController extends Controller
             ->selectRaw('AVG(duration_seconds / message_count) as avg_response')
             ->value('avg_response');
         
-        $avgResponseTimeSeconds = $avgResponseTime ? round($avgResponseTime, 1) : 1.2;
+        $avgResponseTimeSeconds = $avgResponseTime ? round($avgResponseTime, 1) : null;
 
         // User satisfaction: lấy từ ai_sessions
         $avgSatisfaction = AISession::whereNotNull('user_satisfaction')
             ->avg('user_satisfaction');
         
-        // Nếu không có từ ai_sessions, lấy từ feedback
-        if (!$avgSatisfaction) {
+        // Nếu không có từ ai_sessions, thử tính từ feedback (nếu có)
+        if ($avgSatisfaction === null) {
             // Giả sử satisfaction dựa trên feedback positive/negative
             $positiveFeedback = Feedback::whereIn('type', ['general_feedback', 'feature_request'])
                 ->where('status', '!=', 'closed')
@@ -135,9 +123,8 @@ class AdminController extends Controller
                 // Tính satisfaction dựa trên tỷ lệ feedback tích cực (scale 1-5)
                 $satisfactionRatio = $positiveFeedback / $totalFeedback;
                 $avgSatisfaction = 3 + ($satisfactionRatio * 2); // Scale từ 3-5
-            } else {
-                $avgSatisfaction = 4.0; // Default
             }
+            // Nếu không có feedback, giữ null (không dùng giá trị mặc định)
         }
 
         $stats = [
@@ -147,9 +134,9 @@ class AdminController extends Controller
             'avg_duration' => $avgDurationFormatted ?: '0:00',
             'popular_topics' => $popularTopics,
             'ai_performance' => [
-                'accuracy' => round($avgAccuracy ?: 0, 1),
-                'response_time' => $avgResponseTimeSeconds ?: 0,
-                'user_satisfaction' => round($avgSatisfaction ?: 0, 1)
+                'accuracy' => $avgAccuracy !== null ? round($avgAccuracy, 1) : null,
+                'response_time' => $avgResponseTimeSeconds,
+                'user_satisfaction' => $avgSatisfaction !== null ? round($avgSatisfaction, 1) : null
             ]
         ];
 
@@ -756,20 +743,10 @@ class AdminController extends Controller
             return redirect()->route('admin.login');
         }
 
-        // Tính performance metrics từ database
+        // Tính performance metrics từ database - CHỈ dùng dữ liệu thực tế
         // Accuracy: lấy từ ai_sessions
         $avgAccuracy = AISession::whereNotNull('accuracy_score')
             ->avg('accuracy_score');
-        
-        if (!$avgAccuracy) {
-            // Nếu không có accuracy từ ai_sessions, tính từ emergency_level
-            $totalConsultations = AIConsultation::count();
-            if ($totalConsultations > 0) {
-                $avgAccuracy = 90.0; // Default
-            } else {
-                $avgAccuracy = 0;
-            }
-        }
 
         // Response time: tính từ duration_seconds trong ai_consultations
         $avgResponseTime = AIConsultation::whereNotNull('duration_seconds')
@@ -777,14 +754,14 @@ class AdminController extends Controller
             ->selectRaw('AVG(duration_seconds / message_count) as avg_response')
             ->value('avg_response');
         
-        $avgResponseTimeSeconds = $avgResponseTime ? round($avgResponseTime, 1) : 1.2;
+        $avgResponseTimeSeconds = $avgResponseTime ? round($avgResponseTime, 1) : null;
 
         // User satisfaction: lấy từ ai_sessions
         $avgSatisfaction = AISession::whereNotNull('user_satisfaction')
             ->avg('user_satisfaction');
         
-        if (!$avgSatisfaction) {
-            // Nếu không có từ ai_sessions, tính từ feedback
+        // Nếu không có từ ai_sessions, thử tính từ feedback (nếu có)
+        if ($avgSatisfaction === null) {
             $positiveFeedback = Feedback::whereIn('type', ['general_feedback', 'feature_request'])
                 ->where('status', '!=', 'closed')
                 ->count();
@@ -793,12 +770,11 @@ class AdminController extends Controller
             if ($totalFeedback > 0) {
                 $satisfactionRatio = $positiveFeedback / $totalFeedback;
                 $avgSatisfaction = 3 + ($satisfactionRatio * 2); // Scale từ 3-5
-            } else {
-                $avgSatisfaction = 4.0; // Default
             }
+            // Nếu không có feedback, giữ null (không dùng giá trị mặc định)
         }
 
-        // Lấy training scenarios từ database
+        // Lấy training scenarios từ database - CHỈ dùng dữ liệu thực tế
         $trainingScenarios = TrainingScenario::orderBy('created_at', 'desc')
             ->get()
             ->map(function ($scenario) {
@@ -812,17 +788,7 @@ class AdminController extends Controller
             })
             ->toArray();
 
-        // Nếu không có scenarios, sử dụng dữ liệu mặc định
-        if (empty($trainingScenarios)) {
-            $trainingScenarios = [
-                ['id' => null, 'scenario' => 'Emergency situation', 'status' => 'Trained', 'description' => null, 'progress' => 100],
-                ['id' => null, 'scenario' => 'General consultation', 'status' => 'Trained', 'description' => null, 'progress' => 100],
-                ['id' => null, 'scenario' => 'Follow-up consultation', 'status' => 'Trained', 'description' => null, 'progress' => 100],
-                ['id' => null, 'scenario' => 'Symptom analysis', 'status' => 'Trained', 'description' => null, 'progress' => 100],
-            ];
-        }
-
-        // Đếm số lượng scenarios đã trained
+        // Đếm số lượng scenarios đã trained (chỉ từ dữ liệu thực tế)
         $trainedCount = count(array_filter($trainingScenarios, function($s) {
             return strtolower($s['status']) == 'trained';
         }));
@@ -840,9 +806,9 @@ class AdminController extends Controller
             'training_scenarios_count' => count($trainingScenarios),
             'trained_count' => $trainedCount,
             'performance' => [
-                'accuracy' => round($avgAccuracy, 1),
+                'accuracy' => $avgAccuracy !== null ? round($avgAccuracy, 1) : null,
                 'response_time' => $avgResponseTimeSeconds,
-                'user_satisfaction' => round($avgSatisfaction, 1)
+                'user_satisfaction' => $avgSatisfaction !== null ? round($avgSatisfaction, 1) : null
             ],
             'stats' => [
                 'total_sessions' => AIConsultation::count() + AISession::count(),
@@ -962,18 +928,18 @@ class AdminController extends Controller
             return redirect()->route('admin.login');
         }
 
-        // Tính toán metrics chi tiết
-        $avgAccuracy = AISession::whereNotNull('accuracy_score')->avg('accuracy_score') ?? 90.0;
+        // Tính toán metrics chi tiết - CHỈ dùng dữ liệu thực tế, không dùng giá trị mặc định
+        $avgAccuracy = AISession::whereNotNull('accuracy_score')->avg('accuracy_score');
         $avgResponseTime = AIConsultation::whereNotNull('duration_seconds')
             ->where('message_count', '>', 0)
             ->selectRaw('AVG(duration_seconds / message_count) as avg_response')
-            ->value('avg_response') ?? 1.2;
-        $avgSatisfaction = AISession::whereNotNull('user_satisfaction')->avg('user_satisfaction') ?? 4.0;
+            ->value('avg_response');
+        $avgSatisfaction = AISession::whereNotNull('user_satisfaction')->avg('user_satisfaction');
 
         $metrics = [
-            'accuracy' => round($avgAccuracy, 1),
-            'response_time' => round($avgResponseTime, 1),
-            'user_satisfaction' => round($avgSatisfaction, 1),
+            'accuracy' => $avgAccuracy !== null ? round($avgAccuracy, 1) : null,
+            'response_time' => $avgResponseTime !== null ? round($avgResponseTime, 1) : null,
+            'user_satisfaction' => $avgSatisfaction !== null ? round($avgSatisfaction, 1) : null,
             'total_sessions' => AIConsultation::count() + AISession::count(),
             'total_consultations' => AIConsultation::count(),
             'emergency_cases' => AIConsultation::whereIn('emergency_level', ['high', 'critical'])->count(),
